@@ -1,0 +1,141 @@
+/* Styles extracted from DecisionVivienda.jsx */
+
+.dv-th {
+  padding: 10px 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #4b5563;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.dv-td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.dv-input {
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  font-size: 0.9rem;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.dv-card-mini {
+  border-radius: 14px;
+  padding: 12px 14px;
+  background: radial-gradient(circle at top left, #eff6ff, #ffffff 45%, #f9fafb);
+  border: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dv-label-mini {
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+.dv-value-mini {
+  font-size: 1.05rem;
+  color: #111827;
+}
+
+/* Small utility for table row highlight used when year selected */
+.dv-row-selected {
+  background: #eef2ff;
+}
+
+/* Layout and utilities for DecisionVivienda */
+.dv-root {
+  min-height: 100vh;
+  padding: 28px 18px;
+  background: linear-gradient(135deg, #f5f7fa, #e4ecf5);
+}
+
+.dv-card {
+  max-width: 1100px;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(15,23,42,0.08);
+}
+
+.dv-header h1 {
+  margin: 0 0 6px 0;
+  font-size: 1.3rem;
+}
+.dv-header p { color: #6b7280; margin:0; }
+
+.dv-tableWrap { overflow-x:auto; border-radius:10px; border:1px solid #e5e7eb; }
+.dv-table { width:100%; border-collapse:collapse; min-width:420px; }
+
+.dv-grid { margin-top:14px; display:grid; gap:12px; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); }
+.dv-note { font-size:0.8rem; color:#9ca3af; }
+
+.dv-origin-grid { display:grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap:12px; }
+.dv-origin { border:1px solid #eef2ff; padding:12px; border-radius:10px; background:linear-gradient(180deg,#ffffff,#fbfdff); }
+.dv-origin h4 { margin:0 0 8px 0; }
+
+.dv-market-row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+
+.dv-chart { margin-top:8px; }
+.dv-legend { display:flex; gap:8px; flex-wrap:wrap; margin-top:6px; }
+.dv-legend-item { display:flex; align-items:center; gap:6px; font-size:0.9rem; color:#374151; }
+.dv-legend-color { width:12px; height:12px; border-radius:3px; display:inline-block; }
+
+/* Container and layout */
+.dv-root {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa, #e4ecf5);
+  padding: 32px 16px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.dv-card {
+  width: 100%;
+  max-width: 1100px;
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.06);
+  padding: 24px;
+}
+
+.dv-header h1 {
+  font-size: 1.6rem;
+  margin: 0 0 6px 0;
+  color: #0f172a;
+}
+.dv-header p {
+  margin: 0;
+  color: #6b7280;
+}
+
+.dv-tableWrap {
+  overflow-x: auto;
+  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+}
+
+.dv-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px;
+}
+
+.dv-grid {
+  margin-top: 24px;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.dv-note {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
