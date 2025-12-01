@@ -1,0 +1,348 @@
+/* ContadorReps.css - Estilos para el contador de repeticiones */
+
+.cr-container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 1.5rem;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #0f172a;
+}
+
+.cr-header {
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.cr-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.cr-subtitle {
+  font-size: 0.95rem;
+  color: #64748b;
+}
+
+.cr-layout {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 1.5rem;
+}
+
+.cr-left-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Secciones / etiquetas */
+
+.cr-section-label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #64748b;
+}
+
+/* Selector ejercicios */
+
+.cr-exercise-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+}
+
+.cr-exercise-card {
+  border-radius: 1rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid #e2e8f0;
+  background-color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease,
+    transform 0.05s ease, border-color 0.15s ease;
+  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.04);
+}
+
+.cr-exercise-card--active {
+  background-color: #f8fafc;
+  box-shadow: 0 8px 16px rgba(15, 23, 42, 0.1);
+}
+
+.cr-exercise-emoji {
+  font-size: 1.25rem;
+}
+
+.cr-exercise-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.cr-exercise-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.cr-exercise-selected {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+/* Panel contador */
+
+.cr-counter-panel {
+  border-radius: 1.25rem;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  padding: 1.25rem 1.5rem;
+  color: #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.65);
+}
+
+.cr-counter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.cr-chip-label {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #cbd5f5;
+  margin-bottom: 0.25rem;
+}
+
+.cr-counter-exercise {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.cr-series-info {
+  text-align: right;
+  font-size: 0.8rem;
+  color: #a5b4fc;
+}
+
+/* Círculo central */
+
+.cr-counter-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0.75rem 0;
+}
+
+.cr-counter-circle {
+  width: 170px;
+  height: 170px;
+  border-radius: 999px;
+  border-width: 5px;
+  border-style: solid;
+  background: radial-gradient(circle at 30% 20%, #1e293b, #020617);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.9),
+    inset 0 0 40px rgba(15, 23, 42, 0.85);
+}
+
+.cr-reps-number {
+  font-size: 3.5rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.cr-reps-label {
+  font-size: 0.9rem;
+  margin-top: 0.4rem;
+  color: #e5e7eb;
+}
+
+.cr-reps-target {
+  font-size: 0.75rem;
+  margin-top: 0.15rem;
+  color: #94a3b8;
+}
+
+/* Botones */
+
+.cr-counter-buttons {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.6rem;
+  margin-top: 0.25rem;
+}
+
+.cr-btn {
+  border-radius: 999px;
+  padding: 0.6rem 0.8rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: transform 0.05s ease, box-shadow 0.1s ease,
+    background 0.15s ease, border-color 0.15s ease;
+}
+
+.cr-btn-primary {
+  background-color: #22c55e;
+  color: #0f172a;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.45);
+}
+
+.cr-btn-secondary {
+  background-color: #020617;
+  color: #e2e8f0;
+  border-color: #1e293b;
+}
+
+.cr-btn-full {
+  width: 100%;
+  text-align: center;
+  margin-top: 0.3rem;
+  background: linear-gradient(
+    135deg,
+    rgba(15, 23, 42, 1),
+    rgba(15, 23, 42, 0.9),
+    rgba(15, 23, 42, 1)
+  );
+  color: #e5e7eb;
+  border: 1px solid #e5e7eb;
+}
+
+/* Input objetivo */
+
+.cr-target-row {
+  margin-top: 0.1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.8rem;
+  color: #cbd5f5;
+}
+
+.cr-target-input {
+  width: 4rem;
+  padding: 0.15rem 0.35rem;
+  font-size: 0.85rem;
+  border-radius: 0.5rem;
+  border: 1px solid #475569;
+  background-color: #020617;
+  color: #e5e7eb;
+  text-align: center;
+}
+
+/* Timer styles */
+.cr-timer-section {
+  margin-top: 0.75rem;
+  padding: 0.8rem;
+  border-radius: 0.9rem;
+  background: linear-gradient(180deg, #071024 0%, #071824 100%);
+  border: 1px solid rgba(255,255,255,0.03);
+}
+
+.cr-timer-section .cr-btn { min-width: 84px }
+
+/* Badge for minutes remaining */
+.cr-timer-badge {
+  background: rgba(255,255,255,0.06);
+  color: #e6eefc;
+  padding: 6px 8px;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+/* Panel historial */
+
+.cr-history-panel {
+  border-radius: 1.25rem;
+  border: 1px solid #e2e8f0;
+  background-color: #ffffff;
+  padding: 1rem 1.1rem;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+  display: flex;
+  flex-direction: column;
+  min-height: 220px;
+}
+
+.cr-history-description {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  margin-bottom: 0.5rem;
+}
+
+.cr-history-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 0.1rem;
+  margin-top: 0.25rem;
+}
+
+.cr-history-empty {
+  font-size: 0.85rem;
+  color: #cbd5e1;
+  font-style: italic;
+  margin-top: 0.5rem;
+}
+
+.cr-history-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.cr-history-item {
+  border-radius: 0.9rem;
+  border: 1px solid #e2e8f0;
+  padding: 0.45rem 0.6rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+}
+
+.cr-history-left {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.cr-history-emoji {
+  font-size: 1rem;
+}
+
+.cr-history-title {
+  font-weight: 600;
+  font-size: 0.82rem;
+}
+
+.cr-history-meta {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+/* Responsive */
+
+@media (max-width: 768px) {
+  .cr-layout {
+    display: flex;
+    flex-direction: column;
+  }
+}

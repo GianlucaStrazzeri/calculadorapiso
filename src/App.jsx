@@ -3,6 +3,7 @@
 
 import { Routes, Route, Link } from "react-router-dom";
 import DecisionVivienda from "./pages/DecisionVivienda";
+import ContadorReps from "./pages/Ejercicio/ContadorReps";
 
 function Home() {
   return (
@@ -59,6 +60,23 @@ function Home() {
             }}
           >
             Ir a la calculadora
+          </Link>
+
+          {/* Botón que abre el contador de repeticiones */}
+          <Link
+            to="/contador-reps"
+            style={{
+              padding: "10px 18px",
+              borderRadius: "999px",
+              border: "1px solid #d1d5db",
+              background: "#ffffff",
+              color: "#374151",
+              fontWeight: 600,
+              fontSize: "0.95rem",
+              textDecoration: "none",
+            }}
+          >
+            Contador de repeticiones
           </Link>
 
           {/* Botón secundario (lo puedes usar luego para otra página) */}
@@ -148,6 +166,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/calculadora" element={<DecisionVivienda />} />
+        <Route path="/contador-reps" element={<ContadorReps />} />
       </Routes>
     </div>
   );
