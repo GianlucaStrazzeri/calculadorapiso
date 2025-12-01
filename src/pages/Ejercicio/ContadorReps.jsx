@@ -1,40 +1,243 @@
-// ContadorReps.jsx - Componente para contar repeticiones de ejercicios (flexiones, fondos y dominadas)
-
+// ContadorReps.jsx - Contador de repeticiones con peso y calendario de volumen
 import React, { useState, useEffect, useRef } from "react";
 import "./ContadorReps.css";
+import { EXERCISES as BASE_EXERCISES } from "./exercisesConfig";
+import ExerciseSelector from "./ExerciseSelector";
+import TimerPanel from "./TimerPanel";
+import CounterPanel from "./CounterPanel";
+import HistoryPanel from "./HistoryPanel";
+import VolumeCalendar from "./VolumeCalendar";
+import AddExerciseModal from "./AddExerciseModal";
+import TabataTrainer from "./TabataTrainer";
+import TabataOverlay from "./TabataOverlay";
+import { AddClientModal } from "../Client/AddClientModal";
+import { AssignExercisePanel } from "../Client/AssignExercisePanel";
+import { ClientSelector } from "../Client/ClientSelector";
 
-const EXERCISES = [
-  {
-    id: "flexiones",
-    label: "Flexiones",
-    emoji: "🤸",
-    color: "#2563eb", // azul
-  },
-  {
-    id: "fondos",
-    label: "Fondos",
-    emoji: "📥",
-    color: "#f97316", // naranja
-  },
-  {
-    id: "dominadas",
-    label: "Dominadas",
-    emoji: "🪜",
-    color: "#22c55e", // verde
-  },
-];
+const STORAGE_KEY = "cr_state_v1";
+const CUSTOM_EXERCISES_KEY = "cr_custom_exercises_v1";
+const DEFAULT_SECONDS = 30 * 60; // 30 minutos
+
 
 export default function ContadorReps() {
-  const [selectedExercise, setSelectedExercise] = useState(EXERCISES[0]);
+  const [customExercises, setCustomExercises] = useState([]);
+  const [selectedExercise, setSelectedExercise] = useState(
+    BASE_EXERCISES.find((e) => e.videoUrl) || BASE_EXERCISES[0]
+  );
   const [currentReps, setCurrentReps] = useState(0);
   const [targetReps, setTargetReps] = useState(10);
+  const [weightKg, setWeightKg] = useState("");
   const [seriesCount, setSeriesCount] = useState(0);
   const [sessionHistory, setSessionHistory] = useState([]);
+
+  // Clientes y asignaciones (persistidas en localStorage)
+  const CLIENTS_KEY = "cr_clients_v1";
+  const ASSIGNMENTS_KEY = "cr_assignments_v1";
+  const [clients, setClients] = useState([]);
+  const [selectedClientId, setSelectedClientId] = useState(null);
+  const [showAddClientModal, setShowAddClientModal] = useState(false);
+  const [exerciseAssignments, setExerciseAssignments] = useState([]);
+  const [showAssignModal, setShowAssignModal] = useState(false);
+
+  // TIMER
+  const [timeLeft, setTimeLeft] = useState(DEFAULT_SECONDS);
+  const [timerRunning, setTimerRunning] = useState(false);
+  const timerRef = useRef(null);
+  const audioCtxRef = useRef(null);
+
+  // Modal
+  const [showAddExerciseModal, setShowAddExerciseModal] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [showTabataModal, setShowTabataModal] = useState(false);
+  const [activeTabataConfig, setActiveTabataConfig] = useState(null);
+
+  // Lista total de ejercicios (base + personalizados)
+  const allExercises = React.useMemo(
+    () => [...BASE_EXERCISES, ...customExercises].filter((e) => !!e.videoUrl),
+    [customExercises]
+  );
+
+  // =======================
+  // Carga ejercicios personalizados
+  // =======================
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(CUSTOM_EXERCISES_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        setCustomExercises(parsed);
+      }
+    } catch (e) {
+      console.warn("No se pudieron cargar ejercicios personalizados", e);
+    }
+  }, []);
+
+  // Guardar ejercicios personalizados
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        CUSTOM_EXERCISES_KEY,
+        JSON.stringify(customExercises)
+      );
+    } catch (e) {
+      console.warn("No se pudieron guardar ejercicios personalizados", e);
+    }
+  }, [customExercises]);
+
+  // Cargar clientes y asignaciones desde localStorage
+  useEffect(() => {
+    try {
+      const rawClients = localStorage.getItem(CLIENTS_KEY);
+      if (rawClients) {
+        const parsed = JSON.parse(rawClients);
+        if (Array.isArray(parsed)) setClients(parsed);
+      }
+    } catch (e) {
+      console.warn("No se pudieron cargar clientes desde localStorage", e);
+    }
+
+    try {
+      const rawAssign = localStorage.getItem(ASSIGNMENTS_KEY);
+      if (rawAssign) {
+        const parsed = JSON.parse(rawAssign);
+        if (Array.isArray(parsed)) setExerciseAssignments(parsed);
+      }
+    } catch (e) {
+      console.warn("No se pudieron cargar asignaciones desde localStorage", e);
+    }
+  }, []);
+
+  // Persistir clientes
+  useEffect(() => {
+    try {
+      localStorage.setItem(CLIENTS_KEY, JSON.stringify(clients));
+    } catch (e) {
+      console.warn("No se pudieron guardar clients", e);
+    }
+  }, [clients]);
+
+  // Persistir asignaciones
+  useEffect(() => {
+    try {
+      localStorage.setItem(ASSIGNMENTS_KEY, JSON.stringify(exerciseAssignments));
+    } catch (e) {
+      console.warn("No se pudieron guardar asignaciones", e);
+    }
+  }, [exerciseAssignments]);
+
+  // =======================
+  // Carga del resto de estado desde localStorage
+  // (espera a haber cargado customExercises)
+  // =======================
+  const hasLoadedStateRef = useRef(false);
+
+  useEffect(() => {
+    if (hasLoadedStateRef.current) return;
+    hasLoadedStateRef.current = true;
+
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+
+      const all = [...BASE_EXERCISES, ...customExercises];
+
+      if (parsed.selectedExerciseId) {
+        const found = all.find(
+          (e) => e.id === parsed.selectedExerciseId
+        );
+        if (found) setSelectedExercise(found);
+      }
+
+      if (typeof parsed.targetReps === "number")
+        setTargetReps(parsed.targetReps);
+      if (typeof parsed.seriesCount === "number")
+        setSeriesCount(parsed.seriesCount);
+      if (typeof parsed.timeLeft === "number")
+        setTimeLeft(parsed.timeLeft);
+      if (
+        typeof parsed.weightKg === "number" ||
+        typeof parsed.weightKg === "string"
+      ) {
+        setWeightKg(parsed.weightKg);
+      }
+      if (Array.isArray(parsed.sessionHistory)) {
+        const hist = parsed.sessionHistory
+          .map((h) => {
+            const date = h.date ? new Date(h.date) : new Date();
+            const reps = Number(h.reps) || 0;
+            const weight = Number(h.weightKg) || 0;
+            const volume =
+              Number(h.volume) || weight * reps;
+            return {
+              ...h,
+              date,
+              reps,
+              weightKg: weight,
+              volume,
+            };
+          })
+          .slice(0, 100);
+        setSessionHistory(hist);
+      }
+    } catch (e) {
+      console.warn("No se pudo cargar estado desde localStorage", e);
+    }
+  }, [customExercises]);
+
+  // Guardar estado de sesión (historial, temporizador, etc.)
+  useEffect(() => {
+    try {
+      const payload = {
+        selectedExerciseId: selectedExercise?.id,
+        targetReps,
+        seriesCount,
+        timeLeft,
+        weightKg,
+        sessionHistory: sessionHistory.map((h) => ({
+          ...h,
+          date:
+            h.date instanceof Date
+              ? h.date.toISOString()
+              : String(h.date),
+          reps: Number(h.reps) || 0,
+          weightKg: Number(h.weightKg) || 0,
+          volume:
+            Number(h.volume) ||
+            (Number(h.weightKg) || 0) *
+              (Number(h.reps) || 0),
+        })),
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    } catch (e) {
+      console.warn("No se pudo guardar estado en localStorage", e);
+    }
+  }, [
+    selectedExercise,
+    targetReps,
+    seriesCount,
+    timeLeft,
+    weightKg,
+    sessionHistory,
+  ]);
+
+  // =======================
+  // Lógica de contador
+  // =======================
 
   const handleExerciseChange = (exercise) => {
     setSelectedExercise(exercise);
     setCurrentReps(0);
     setSeriesCount(0);
+    setWeightKg("");
+  };
+
+  // Añadir múltiples repeticiones a la vez
+  const addMultipleReps = (n) => {
+    const num = Number(n) || 0;
+    if (num <= 0) return;
+    setCurrentReps((prev) => prev + num);
   };
 
   const increment = () => setCurrentReps((prev) => prev + 1);
@@ -45,35 +248,28 @@ export default function ContadorReps() {
   const handleFinishSeries = () => {
     if (currentReps === 0) return;
 
+    const isWeighted = selectedExercise.type === "weighted";
+    const numericWeight = isWeighted ? Number(weightKg) || 0 : 0;
+    const volume = numericWeight * currentReps;
+
     const newEntry = {
       id: Date.now(),
       exerciseId: selectedExercise.id,
       exerciseLabel: selectedExercise.label,
       reps: currentReps,
+      weightKg: numericWeight,
+      volume,
       date: new Date(),
     };
 
-    setSessionHistory((prev) => [newEntry, ...prev].slice(0, 15));
+    setSessionHistory((prev) => [newEntry, ...prev].slice(0, 100));
     setSeriesCount((prev) => prev + 1);
     setCurrentReps(0);
   };
 
-  const formattedTime = (date) =>
-    date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-
-  const formattedDate = (date) =>
-    date.toLocaleDateString([], {
-      day: "2-digit",
-      month: "2-digit",
-    });
-
-  // --- TIMER: 30 minutos con alarma sonora ---
-  const DEFAULT_SECONDS = 30 * 60; // 30 minutes
-  const [timeLeft, setTimeLeft] = useState(DEFAULT_SECONDS);
-  const [timerRunning, setTimerRunning] = useState(false);
-  const timerRef = useRef(null);
-  const audioCtxRef = useRef(null);
-
+  // =======================
+  // Temporizador
+  // =======================
   useEffect(() => {
     if (timerRunning && timerRef.current == null) {
       timerRef.current = setInterval(() => {
@@ -82,7 +278,6 @@ export default function ContadorReps() {
             clearInterval(timerRef.current);
             timerRef.current = null;
             setTimerRunning(false);
-            // play beep
             playBeep();
             return 0;
           }
@@ -97,7 +292,6 @@ export default function ContadorReps() {
         timerRef.current = null;
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timerRunning]);
 
   function startTimer() {
@@ -121,14 +315,15 @@ export default function ContadorReps() {
   function playBeep() {
     try {
       if (!audioCtxRef.current) {
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const AudioContext =
+          window.AudioContext || window.webkitAudioContext;
         audioCtxRef.current = new AudioContext();
       }
       const ctx = audioCtxRef.current;
       const o = ctx.createOscillator();
       const g = ctx.createGain();
       o.type = "sine";
-      o.frequency.value = 880; // A5
+      o.frequency.value = 880;
       g.gain.value = 0.0001;
       o.connect(g);
       g.connect(ctx.destination);
@@ -138,81 +333,55 @@ export default function ContadorReps() {
       g.gain.exponentialRampToValueAtTime(0.0001, now + 1.0);
       o.stop(now + 1.05);
     } catch (e) {
-      // Fallback: try HTML5 audio (if any)
       console.warn("No se pudo reproducir beep via WebAudio", e);
     }
   }
 
-  const formattedTimer = (s) => {
-    const mm = Math.floor(s / 60)
-      .toString()
-      .padStart(2, "0");
-    const ss = Math.floor(s % 60)
-      .toString()
-      .padStart(2, "0");
-    return `${mm}:${ss}`;
-  };
-
-  // Totales por tipo de ejercicio (suma de reps y series registradas)
+  // =======================
+  // Totales por ejercicio
+  // =======================
   const totalsByExercise = React.useMemo(() => {
     const map = {};
-    EXERCISES.forEach((ex) => {
-      map[ex.id] = { id: ex.id, label: ex.label, color: ex.color, reps: 0, series: 0 };
+    allExercises.forEach((ex) => {
+      map[ex.id] = {
+        id: ex.id,
+        label: ex.label,
+        color: ex.color,
+        reps: 0,
+        series: 0,
+        totalVolume: 0,
+      };
     });
     sessionHistory.forEach((h) => {
-      if (!map[h.exerciseId]) return;
-      map[h.exerciseId].reps += Number(h.reps) || 0;
-      map[h.exerciseId].series += 1;
+      const key = h.exerciseId;
+      if (!map[key]) return;
+      const reps = Number(h.reps) || 0;
+      const volume =
+        Number(h.volume) ||
+        (Number(h.weightKg) || 0) * reps;
+      map[key].reps += reps;
+      map[key].series += 1;
+      map[key].totalVolume += volume;
     });
     return Object.values(map);
-  }, [sessionHistory]);
+  }, [sessionHistory, allExercises]);
 
-  // --- PERSISTENCIA EN localStorage ---
-  const STORAGE_KEY = "cr_state_v1";
-
-  // carga inicial desde localStorage
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return;
-      const parsed = JSON.parse(raw);
-      if (parsed.selectedExerciseId) {
-        const found = EXERCISES.find((e) => e.id === parsed.selectedExerciseId);
-        if (found) setSelectedExercise(found);
-      }
-      if (typeof parsed.targetReps === "number") setTargetReps(parsed.targetReps);
-      if (typeof parsed.seriesCount === "number") setSeriesCount(parsed.seriesCount);
-      if (typeof parsed.timeLeft === "number") setTimeLeft(parsed.timeLeft);
-      if (Array.isArray(parsed.sessionHistory)) {
-        const hist = parsed.sessionHistory
-          .map((h) => ({ ...h, date: h.date ? new Date(h.date) : new Date() }))
-          .slice(0, 100);
-        setSessionHistory(hist);
-      }
-    } catch (e) {
-      console.warn("No se pudo cargar estado desde localStorage", e);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // guardar automáticamente cuando cambian datos importantes
-  useEffect(() => {
-    try {
-      const payload = {
-        selectedExerciseId: selectedExercise?.id,
-        targetReps,
-        seriesCount,
-        timeLeft,
-        sessionHistory: sessionHistory.map((h) => ({
-          ...h,
-          date: h.date instanceof Date ? h.date.toISOString() : String(h.date),
-        })),
-      };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-    } catch (e) {
-      console.warn("No se pudo guardar estado en localStorage", e);
-    }
-  }, [selectedExercise, targetReps, seriesCount, timeLeft, sessionHistory]);
+  // =======================
+  // Ejercicios personalizados: añadir desde modal
+  // =======================
+  function handleAddCustomExercise(newExercise) {
+    setCustomExercises((prev) => {
+      const exists = prev.some((e) => e.id === newExercise.id);
+      const updated = exists
+        ? prev.map((e) =>
+            e.id === newExercise.id ? newExercise : e
+          )
+        : [...prev, newExercise];
+      return updated;
+    });
+    setSelectedExercise(newExercise);
+    setShowAddExerciseModal(false);
+  }
 
   function clearLocalData() {
     try {
@@ -220,261 +389,266 @@ export default function ContadorReps() {
     } catch (e) {
       console.warn("No se pudo borrar localStorage", e);
     }
-    // reset local states
     setSessionHistory([]);
     setSeriesCount(0);
     setTargetReps(10);
-    setSelectedExercise(EXERCISES[0]);
+    setSelectedExercise(BASE_EXERCISES[0]);
+    setWeightKg("");
     resetTimer();
   }
 
   return (
-    <div className="cr-container">
-      {/* HEADER */}
-      <header className="cr-header">
-        <h1 className="cr-title">Contador de Repeticiones</h1>
-        <p className="cr-subtitle">
-          Elige el ejercicio, pulsa para sumar y registra tus series.
-        </p>
-        <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
-          <button
-            type="button"
-            onClick={clearLocalData}
-            style={{
-              padding: "6px 10px",
-              borderRadius: 8,
-              border: "1px solid #e5e7eb",
-              background: "#fff",
-              color: "#374151",
-              fontSize: "0.85rem",
-              cursor: "pointer",
-            }}
-          >
-            Borrar datos locales
-          </button>
-        </div>
-      </header>
-
-      {/* CONTENEDOR PRINCIPAL */}
-      <div className="cr-layout">
-        {/* COLUMNA IZQUIERDA: EJERCICIO + CONTADOR */}
-        <div className="cr-left-column">
-          {/* Selector de ejercicios */}
-          <section>
-            <h2 className="cr-section-label">Ejercicio</h2>
-            <div className="cr-exercise-grid">
-              {EXERCISES.map((ex) => {
-                const isActive = ex.id === selectedExercise.id;
-                return (
-                  <button
-                    key={ex.id}
-                    onClick={() => handleExerciseChange(ex)}
-                    className={
-                      "cr-exercise-card" +
-                      (isActive ? " cr-exercise-card--active" : "")
-                    }
-                    style={
-                      isActive
-                        ? {
-                            borderColor: ex.color,
-                          }
-                        : undefined
-                    }
-                  >
-                    <span
-                      className="cr-exercise-emoji"
-                      style={isActive ? {} : { filter: "grayscale(0.2)" }}
-                    >
-                      {ex.emoji}
-                    </span>
-                    <div className="cr-exercise-text">
-                      <span className="cr-exercise-name">{ex.label}</span>
-                      {isActive && (
-                        <span className="cr-exercise-selected">
-                          Seleccionado
-                        </span>
-                      )}
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </section>
-
-          {/* TIMER SECTION */}
-          <section className="cr-timer-section">
-            <h2 className="cr-section-label">Temporizador 30 min</h2>
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <div style={{ fontSize: "1.6rem", fontWeight: 700 }}>{formattedTimer(timeLeft)}</div>
-              {timerRunning && (
-                <div className="cr-timer-badge">{formattedTimer(timeLeft)} restantes</div>
-              )}
-              <div style={{ display: "flex", gap: 8 }}>
-                {!timerRunning ? (
-                  <button className="cr-btn cr-btn-primary" onClick={startTimer}>Iniciar</button>
-                ) : (
-                  <button className="cr-btn cr-btn-secondary" onClick={pauseTimer}>Pausar</button>
-                )}
-                <button className="cr-btn" onClick={resetTimer}>Reset</button>
-              </div>
-            </div>
-            <div style={{ fontSize: "0.85rem", color: "#94a3b8", marginTop: 8 }}>
-              Al terminar sonará una alarma breve.
-            </div>
-          </section>
-
-          {/* PANEL DE CONTADOR */}
-          <section className="cr-counter-panel">
-            <div className="cr-counter-header">
-              <div>
-                <p className="cr-chip-label">Serie actual</p>
-                <h2 className="cr-counter-exercise">
-                  {selectedExercise.emoji} {selectedExercise.label}
-                </h2>
-              </div>
-              <div className="cr-series-info">
-                <span>Series completadas: </span>
-                <strong>{seriesCount}</strong>
-              </div>
-            </div>
-
-            {/* NÚMERO CENTRAL */}
-            <div className="cr-counter-center">
-              <div
-                className="cr-counter-circle"
-                style={{
-                  borderColor: selectedExercise.color,
-                }}
-              >
-                <span className="cr-reps-number">{currentReps}</span>
-                <span className="cr-reps-label">repeticiones</span>
-                <span className="cr-reps-target">
-                  objetivo: {targetReps}
-                </span>
-              </div>
-            </div>
-
-            {/* BOTONES PRINCIPALES */}
-            <div className="cr-counter-buttons">
-              <button
-                type="button"
-                onClick={decrement}
-                className="cr-btn cr-btn-secondary"
-              >
-                –1
-              </button>
-              <button
-                type="button"
-                onClick={increment}
-                className="cr-btn cr-btn-primary"
-                style={{
-                  backgroundColor: selectedExercise.color,
-                }}
-              >
-                +1
-              </button>
-              <button
-                type="button"
-                onClick={resetReps}
-                className="cr-btn cr-btn-secondary"
-              >
-                Reset
-              </button>
-            </div>
-
-            {/* FINALIZAR SERIE */}
+    <>
+      <div className="cr-container">
+        {/* HEADER */}
+        <header className="cr-header">
+          <h1 className="cr-title">Contador de Repeticiones</h1>
+          <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
             <button
               type="button"
-              onClick={handleFinishSeries}
-              className="cr-btn cr-btn-full"
+              onClick={clearLocalData}
               style={{
-                borderColor: selectedExercise.color,
+                padding: "2px 2px",
+                borderRadius: 4,
+                border: "1px solid #e5e7eb",
+                background: "#fff",
+                color: "#374151",
+                fontSize: "0.85rem",
+                cursor: "pointer",
               }}
             >
-              ✔ Finalizar serie
+              Borrar datos locales
             </button>
 
-            {/* OBJETIVO DE REPS */}
-            <div className="cr-target-row">
-              <span>Objetivo de repeticiones por serie</span>
-              <input
-                type="number"
-                min={1}
-                value={targetReps}
-                onChange={(e) =>
-                  setTargetReps(
-                    Number(e.target.value) > 0 ? Number(e.target.value) : 1
-                  )
-                }
-                className="cr-target-input"
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <ClientSelector
+                clients={clients}
+                selectedClientId={selectedClientId}
+                onChangeClient={(id) => setSelectedClientId(id)}
+                onOpenAddClient={() => setShowAddClientModal(true)}
+              />
+              {selectedClientId && (
+                <button
+                  type="button"
+                  className="cr-btn"
+                  onClick={() => setShowAssignModal(true)}
+                  style={{ borderRadius: 999, padding: "6px 8px", fontSize: "0.95rem" }}
+                  title="Asignar ejercicio al cliente"
+                >
+                  ➕
+                </button>
+              )}
+            </div>
+          </div>
+        </header>
+
+        {/* LAYOUT PRINCIPAL */}
+        <div className="cr-layout">
+          {/* COLUMNA IZQUIERDA */}
+          <div className="cr-left-column">
+            {/* Calendario de volumen movido arriba */}
+            <div style={{ marginBottom: 12 }}>
+              <VolumeCalendar sessionHistory={sessionHistory} />
+            
+            </div>
+
+            <ExerciseSelector
+              exercises={allExercises}
+              selectedExercise={selectedExercise}
+              onChange={handleExerciseChange}
+              onOpenAddExercise={() =>
+                setShowAddExerciseModal(true)
+              }
+            />
+
+            
+
+            <CounterPanel
+              selectedExercise={selectedExercise}
+              currentReps={currentReps}
+              targetReps={targetReps}
+              weightKg={weightKg}
+              seriesCount={seriesCount}
+              onIncrement={increment}
+              onDecrement={decrement}
+              onResetReps={resetReps}
+              onChangeTargetReps={setTargetReps}
+              onChangeWeight={setWeightKg}
+              onFinishSeries={handleFinishSeries}
+              onAddMultiple={addMultipleReps}
+              onOpenTabata={() => setShowTabataModal(true)}
+            />
+          </div>
+
+          {/* COLUMNA DERECHA */}
+          <div style={{ width: showHistory ? 360 : 260 }}>
+            {/* Contador de series a la derecha (también) */}
+            <div style={{ marginBottom: 10 }}>
+              <div className="cr-series-card">
+                <div className="cr-series-card-label">Series completadas</div>
+                <div className="cr-series-card-value">{seriesCount}</div>
+              </div>
+            </div>
+
+            {/* Temporizador colocado a la derecha */}
+            <div style={{ marginBottom: 10 }}>
+              <TimerPanel
+                timeLeft={timeLeft}
+                timerRunning={timerRunning}
+                onStart={startTimer}
+                onPause={pauseTimer}
+                onReset={resetTimer}
               />
             </div>
-          </section>
-        </div>
 
-        {/* COLUMNA DERECHA: HISTORIAL SIMPLE */}
-        <aside className="cr-history-panel">
-          <h2 className="cr-section-label">Historial rápido</h2>
-          <p className="cr-history-description">
-            Guarda cada serie que completes para llevar un control sencillo de
-            la sesión.
-          </p>
-
-          {/* Totales por ejercicio */}
-          <div style={{ marginBottom: 10 }}>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              {totalsByExercise.map((t) => (
-                <div key={t.id} style={{ minWidth: 140, padding: 8, borderRadius: 8, border: "1px solid #eef2ff", background: "#fff" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <span style={{ width: 12, height: 12, borderRadius: 999, background: t.color }} />
-                      <strong style={{ fontSize: 13 }}>{t.label}</strong>
-                    </div>
-                    <div style={{ textAlign: "right" }}>
-                      <div style={{ fontSize: 13, fontWeight: 700 }}>{t.reps} reps</div>
-                      <div style={{ fontSize: 12, color: "#64748b" }}>{t.series} series</div>
-                    </div>
-                  </div>
+            {showHistory ? (
+              <div>
+                <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 8 }}>
+                  <button
+                    type="button"
+                    className="cr-btn"
+                    onClick={() => setShowHistory(false)}
+                    style={{ borderRadius: 999, padding: "6px 10px", fontSize: "0.85rem", background: "#fff", border: "1px solid #e5e7eb" }}
+                  >
+                    Ocultar historial
+                  </button>
                 </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="cr-history-scroll">
-            {sessionHistory.length === 0 ? (
-              <p className="cr-history-empty">
-                Aún no has registrado ninguna serie.
-              </p>
+                <HistoryPanel
+                  sessionHistory={sessionHistory}
+                  totalsByExercise={totalsByExercise}
+                  exercises={allExercises}
+                />
+              </div>
             ) : (
-              <ul className="cr-history-list">
-                {sessionHistory.map((entry) => {
-                  const exData = EXERCISES.find(
-                    (ex) => ex.id === entry.exerciseId
-                  );
-                  return (
-                    <li key={entry.id} className="cr-history-item">
-                      <div className="cr-history-left">
-                        <span className="cr-history-emoji">
-                          {exData?.emoji || "🏋️"}
-                        </span>
-                        <div>
-                          <div className="cr-history-title">
-                            {entry.exerciseLabel} · {entry.reps} reps
-                          </div>
-                          <div className="cr-history-meta">
-                            {formattedDate(entry.date)} ·{" "}
-                            {formattedTime(entry.date)}
-                          </div>
-                        </div>
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
+              <aside className="cr-history-panel cr-history-compact">
+                <h2 className="cr-section-label">Historial</h2>
+                <p className="cr-history-description">
+                  Pulsa el botón "Historial volúmenes" para abrirlo.
+                </p>
+                <div style={{ marginTop: 8, display: "flex", justifyContent: "center" }}>
+                  <button
+                    type="button"
+                    className="cr-btn"
+                    onClick={() => setShowHistory(true)}
+                    style={{ borderRadius: 999, padding: "6px 10px", fontSize: "0.85rem", background: "#fff", border: "1px solid #e5e7eb" }}
+                  >
+                    Historial volúmenes
+                  </button>
+                </div>
+              </aside>
             )}
           </div>
-        </aside>
+        </div>
       </div>
-    </div>
+
+      {/* MODAL PARA AÑADIR EJERCICIOS */}
+      {/* Modal para Tabata Trainer */}
+      {showTabataModal && (
+        <div className="cr-modal-backdrop">
+          <div className="cr-modal" style={{ maxWidth: 820 }}>
+            <div className="cr-modal-header">
+              <h3>Tabata Trainer</h3>
+              <button type="button" className="cr-modal-close" onClick={() => setShowTabataModal(false)}>✕</button>
+            </div>
+            <div className="cr-modal-body">
+              <TabataTrainer
+                onStart={(config) => {
+                  // start an active tabata session overlay
+                  setActiveTabataConfig(config);
+                  setShowTabataModal(false);
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Overlay running Tabata */}
+      {activeTabataConfig && (
+        <TabataOverlay
+          config={activeTabataConfig}
+          onCancel={() => setActiveTabataConfig(null)}
+          onFinish={() => setActiveTabataConfig(null)}
+        />
+      )}
+
+      <AddExerciseModal
+        isOpen={showAddExerciseModal}
+        onClose={() => setShowAddExerciseModal(false)}
+        onAddExercise={handleAddCustomExercise}
+      />
+
+      {/* Modal para añadir clientes */}
+      <AddClientModal
+        isOpen={showAddClientModal}
+        onClose={() => setShowAddClientModal(false)}
+        onAddClient={(newClient) => {
+          setClients((prev) => {
+            const updated = [...prev, newClient];
+            try {
+              localStorage.setItem(CLIENTS_KEY, JSON.stringify(updated));
+            } catch (e) {
+              console.warn("No se pudo guardar cliente", e);
+            }
+            return updated;
+          });
+          setSelectedClientId(newClient.id);
+          setShowAddClientModal(false);
+        }}
+      />
+
+      {/* Modal para asignar ejercicios a cliente */}
+      {showAssignModal && (
+        <div className="cr-modal-backdrop">
+          <div className="cr-modal" style={{ maxWidth: 760 }}>
+            <div className="cr-modal-header">
+              <h3>Asignar ejercicio</h3>
+              <button type="button" className="cr-modal-close" onClick={() => setShowAssignModal(false)}>✕</button>
+            </div>
+            <div className="cr-modal-body">
+              <AssignExercisePanel
+                selectedClientId={selectedClientId}
+                clients={clients}
+                exercises={allExercises}
+                exerciseAssignments={exerciseAssignments}
+                onCreateAssignment={(assignment) => {
+                  setExerciseAssignments((prev) => {
+                    const updated = [...prev, assignment];
+                    try {
+                      localStorage.setItem(ASSIGNMENTS_KEY, JSON.stringify(updated));
+                    } catch (e) {
+                      console.warn("No se pudo guardar asignación", e);
+                    }
+                    return updated;
+                  });
+                  setShowAssignModal(false);
+                }}
+                onToggleActive={(assignmentId) => {
+                  setExerciseAssignments((prev) => {
+                    const updated = prev.map((a) =>
+                      a.id === assignmentId ? { ...a, activo: !a.activo } : a
+                    );
+                    try {
+                      localStorage.setItem(ASSIGNMENTS_KEY, JSON.stringify(updated));
+                    } catch (e) {
+                      console.warn("No se pudo guardar asignaciones", e);
+                    }
+                    return updated;
+                  });
+                }}
+                onSelectForSession={(exerciseId, opts = {}) => {
+                  const exercise = allExercises.find((e) => e.id === exerciseId);
+                  if (!exercise) return;
+                  setSelectedExercise(exercise);
+                  if (opts.targetReps != null) setTargetReps(opts.targetReps);
+                  if (opts.targetWeightKg != null) setWeightKg(opts.targetWeightKg);
+                  setShowAssignModal(false);
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

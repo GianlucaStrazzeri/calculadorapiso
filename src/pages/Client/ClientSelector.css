@@ -1,0 +1,130 @@
+/* ClientSelector.css
+   Estilos para el selector de paciente/cliente del panel de ejercicios
+*/
+
+.cr-client-selector {
+  background: #ffffff;
+  border: 1px solid #e4e7ec;
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin-bottom: 16px;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Cabecera: título + botón */
+.cr-client-selector-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cr-client-selector-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+/* Botón "Añadir cliente" */
+.cr-client-selector .cr-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition:
+    background-color 0.18s ease,
+    color 0.18s ease,
+    box-shadow 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.08s ease;
+  white-space: nowrap;
+}
+
+.cr-client-selector .cr-btn-secondary {
+  background: #f9fafb;
+  color: #2563eb;
+  border-color: #bfdbfe;
+  box-shadow: 0 3px 10px rgba(37, 99, 235, 0.12);
+}
+
+.cr-client-selector .cr-btn-secondary:hover {
+  background: #eff6ff;
+  border-color: #60a5fa;
+  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.18);
+  transform: translateY(-1px);
+}
+
+.cr-client-selector .cr-btn-secondary:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 6px rgba(15, 23, 42, 0.18);
+}
+
+/* Mensaje cuando no hay clientes */
+.cr-client-empty {
+  margin: 4px 0 0;
+  font-size: 0.9rem;
+  color: #6b7280;
+  font-style: italic;
+  line-height: 1.4;
+}
+
+/* Select de clientes */
+.cr-select {
+  width: 100%;
+  margin-top: 4px;
+  padding: 8px 10px;
+  font-size: 0.92rem;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  background-color: #f9fafb;
+  color: #111827;
+  outline: none;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    background-color 0.15s ease;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, #9ca3af 50%),
+    linear-gradient(135deg, #9ca3af 50%, transparent 50%);
+  background-position:
+    calc(100% - 14px) 12px,
+    calc(100% - 9px) 12px;
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+}
+
+.cr-select:focus {
+  border-color: #2563eb;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.cr-select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Responsive: apilar título y botón en pantallas pequeñas */
+@media (max-width: 600px) {
+  .cr-client-selector-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .cr-client-selector .cr-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

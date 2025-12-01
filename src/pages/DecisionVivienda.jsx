@@ -8,6 +8,7 @@
 // - Estima qué alquiler debería tener la vivienda para “pagarse sola” y dar rentabilidad
 
 import { useState, useMemo, useEffect } from "react";
+import WebPageGptModal from "./FetchWeb/WebPageGptModal";
 
 function DecisionVivienda() {
   const [precioCompra, setPrecioCompra] = useState(145000); // precio al que compras
@@ -693,6 +694,8 @@ function DecisionVivienda() {
             <button onClick={saveScenario} style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid #d1d5db", background: "#f3f4f6" }}>
               Guardar escenario
             </button>
+            {/* Integración: botón/modal para FetchWeb GPT */}
+            <WebPageGptModal />
 
             {escenariosGuardados.length > 0 && (
               <div style={{ marginTop: 6, width: "100%" }}>

@@ -1,0 +1,262 @@
+/* WebPageGptModal.css
+   Estilos para el modal de fetch + GPT
+*/
+
+.wpg-open-btn {
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: none;
+  background: #2563eb;
+  color: #ffffff;
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    transform 0.08s ease,
+    box-shadow 0.15s ease;
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.35);
+}
+
+.wpg-open-btn:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.wpg-open-btn:active {
+  transform: translateY(0);
+}
+
+/* BACKDROP + MODAL */
+
+.wpg-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.wpg-modal {
+  width: 100%;
+  max-width: 900px;
+  max-height: 90vh;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.35);
+  display: flex;
+  flex-direction: column;
+  padding: 16px 18px;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+}
+
+/* CABECERA */
+
+.wpg-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.wpg-title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.wpg-close-btn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 1.1rem;
+  line-height: 1;
+  color: #6b7280;
+  padding: 4px;
+  border-radius: 999px;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease,
+    transform 0.08s ease;
+}
+
+.wpg-close-btn:hover {
+  background: #f3f4f6;
+  color: #111827;
+  transform: translateY(-1px);
+}
+
+.wpg-close-btn:active {
+  transform: translateY(0);
+}
+
+/* FORMULARIO */
+
+.wpg-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.wpg-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.85rem;
+}
+
+.wpg-field span {
+  font-weight: 500;
+  color: #374151;
+}
+
+.wpg-field-full {
+  grid-column: 1 / -1;
+}
+
+.wpg-input,
+.wpg-textarea {
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  padding: 6px 8px;
+  font-size: 0.9rem;
+  color: #111827;
+  outline: none;
+  background: #f9fafb;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.wpg-input::placeholder,
+.wpg-textarea::placeholder {
+  color: #9ca3af;
+}
+
+.wpg-input:focus,
+.wpg-textarea:focus {
+  border-color: #2563eb;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.18);
+}
+
+/* ERRORES */
+
+.wpg-error {
+  grid-column: 1 / -1;
+  background: #fef2f2;
+  color: #b91c1c;
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-size: 0.8rem;
+}
+
+/* BOTONES */
+
+.wpg-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.wpg-btn {
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-size: 0.88rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.08s ease;
+}
+
+.wpg-btn-primary {
+  background: #2563eb;
+  color: #ffffff;
+  border-color: #1d4ed8;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+}
+
+.wpg-btn-primary:hover:not(:disabled) {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.wpg-btn-primary:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+
+.wpg-btn-ghost {
+  background: #ffffff;
+  color: #4b5563;
+  border-color: #d1d5db;
+}
+
+.wpg-btn-ghost:hover {
+  background: #f9fafb;
+  transform: translateY(-1px);
+}
+
+/* RESULTADO */
+
+.wpg-result {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #e5e7eb;
+  overflow: auto;
+}
+
+.wpg-result-title {
+  margin: 0 0 6px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.wpg-muted {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.wpg-result-box {
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  padding: 10px;
+  font-size: 0.9rem;
+  background: #f9fafb;
+  max-height: 50vh;
+  overflow: auto;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 768px) {
+  .wpg-modal {
+    max-width: 100%;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+
+  .wpg-form {
+    grid-template-columns: 1fr;
+  }
+
+  .wpg-field-full {
+    grid-column: 1;
+  }
+}

@@ -127,39 +127,8 @@ function App() {
             textDecoration: "none",
           }}
         >
-          🏡 Mi panel vivienda
+          🏡 
         </Link>
-
-        <div style={{ display: "flex", gap: "8px" }}>
-          <Link
-            to="/"
-            style={{
-              padding: "6px 12px",
-              borderRadius: "999px",
-              border: "1px solid #e5e7eb",
-              textDecoration: "none",
-              fontSize: "0.85rem",
-              color: "#374151",
-            }}
-          >
-            Inicio
-          </Link>
-
-          <Link
-            to="/calculadora"
-            style={{
-              padding: "6px 12px",
-              borderRadius: "999px",
-              border: "none",
-              textDecoration: "none",
-              fontSize: "0.85rem",
-              backgroundColor: "#2563eb",
-              color: "white",
-            }}
-          >
-            Calculadora
-          </Link>
-        </div>
       </nav>
 
       {/* Zona donde se cargan las páginas */}

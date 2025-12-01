@@ -1,0 +1,245 @@
+/* TabataTrainer.css
+   Pantalla tipo Tabata Timer (azul + blanco)
+*/
+
+:root {
+  --tt-blue: #283593;
+  --tt-blue-dark: #1e2a6a;
+  --tt-blue-light: #3f51b5;
+  --tt-bg: #f3f4f6;
+  --tt-text: #111827;
+}
+
+/* CONTENEDOR GENERAL (para simular pantalla de móvil centrada) */
+.tt-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at top, #e0e7ff, #f9fafb 45%, #e5e7eb);
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.tt-card {
+  width: 100%;
+  max-width: 360px;
+  background: #ffffff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.32);
+  display: flex;
+  flex-direction: column;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+}
+
+/* BARRA SUPERIOR */
+.tt-topbar {
+  background: var(--tt-blue);
+  color: #ffffff;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tt-topbar-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.tt-topbar-icons {
+  display: flex;
+  gap: 10px;
+  font-size: 0.9rem;
+}
+
+/* RESUMEN (debajo de la barra) */
+.tt-summary {
+  background: var(--tt-blue-dark);
+  color: #ffffff;
+  padding: 8px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 0.86rem;
+}
+
+.tt-summary-time {
+  font-weight: 600;
+}
+
+.tt-summary-dot {
+  opacity: 0.7;
+}
+
+/* CONTENIDO PRINCIPAL */
+.tt-content {
+  padding: 10px 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* FILA DE CONFIGURACIÓN */
+.tt-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #e5e7eb;
+  column-gap: 8px;
+}
+
+.tt-row:last-of-type {
+  border-bottom: none;
+}
+
+.tt-row-icon {
+  width: 28px;
+  text-align: center;
+  font-size: 1.2rem;
+}
+
+.tt-row-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tt-row-label {
+  font-size: 0.92rem;
+  color: var(--tt-text);
+  font-weight: 500;
+}
+
+.tt-row-description {
+  font-size: 0.78rem;
+}
+
+/* INPUT DE DESCRIPCIÓN */
+.tt-description-input {
+  border: none;
+  border-bottom: 1px dashed rgba(40, 53, 147, 0.4);
+  outline: none;
+  padding: 0;
+  font-size: 0.78rem;
+  color: #4b5563;
+  background: transparent;
+}
+
+.tt-description-input::placeholder {
+  color: rgba(40, 53, 147, 0.5);
+}
+
+/* CONTROLES (+ / - / valor) */
+.tt-row-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tt-circle-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: none;
+  background: #e8eaf6;
+  color: var(--tt-blue);
+  font-size: 1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    transform 0.08s ease,
+    box-shadow 0.15s ease;
+  box-shadow: 0 2px 5px rgba(40, 53, 147, 0.3);
+}
+
+.tt-circle-btn:hover {
+  background: #c5cae9;
+  transform: translateY(-1px);
+}
+
+.tt-circle-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(40, 53, 147, 0.4);
+}
+
+.tt-row-value {
+  min-width: 32px;
+  text-align: center;
+  font-size: 0.95rem;
+  color: var(--tt-text);
+}
+
+/* BARRA INFERIOR (BOTONES GRANDES) */
+.tt-bottom {
+  background: var(--tt-blue);
+  padding: 10px 12px 12px;
+  display: grid;
+  grid-template-columns: 1fr 2.2fr 1fr;
+  gap: 8px;
+}
+
+.tt-bottom-btn {
+  border: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 8px 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background-color 0.15s ease,
+    transform 0.08s ease,
+    box-shadow 0.15s ease;
+}
+
+/* Botón START grande */
+.tt-bottom-start {
+  background: #ffffff;
+  color: var(--tt-blue-dark);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+}
+
+.tt-bottom-start:hover {
+  background: #f9fafb;
+  transform: translateY(-1px);
+}
+
+.tt-bottom-start:active {
+  transform: translateY(0);
+}
+
+/* Botones laterales */
+.tt-bottom-list,
+.tt-bottom-plus {
+  background: #1a237e;
+  color: #ffffff;
+}
+
+.tt-bottom-list:hover,
+.tt-bottom-plus:hover {
+  background: #283593;
+  transform: translateY(-1px);
+}
+
+.tt-bottom-list:active,
+.tt-bottom-plus:active {
+  transform: translateY(0);
+}
+
+/* RESPONSIVE */
+@media (max-width: 480px) {
+  .tt-card {
+    max-width: 100%;
+  }
+}
