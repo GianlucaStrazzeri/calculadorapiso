@@ -9,6 +9,7 @@ export default function ExerciseSelector({
   selectedExercise,
   onChange,
   onOpenAddExercise,
+  disableAdd = false,
 }) {
   const [searchTerm, setSearchTerm] = useState("");
   // Always show the search panel (no quick access buttons)
@@ -38,21 +39,23 @@ export default function ExerciseSelector({
         <h2 className="cr-section-label" style={{ marginBottom: 0 }}>
           Ejercicio
         </h2>
-        <button
-          type="button"
-          onClick={onOpenAddExercise}
-          className="cr-btn"
-          style={{
-            padding: "0.25rem 0.7rem",
-            fontSize: "0.8rem",
-            borderRadius: 999,
-            border: "1px solid #e2e8f0",
-            background: "#ffffff",
-            color: "#0f172a",
-          }}
-        >
-          ➕ Añadir ejercicio
-        </button>
+        {!disableAdd && (
+          <button
+            type="button"
+            onClick={onOpenAddExercise}
+            className="cr-btn"
+            style={{
+              padding: "0.25rem 0.7rem",
+              fontSize: "0.8rem",
+              borderRadius: 999,
+              border: "1px solid #e2e8f0",
+              background: "#ffffff",
+              color: "#0f172a",
+            }}
+          >
+            ➕ Añadir ejercicio
+          </button>
+        )}
       </div>
 
       {/* Nota: se elimina el acceso rápido para usar solo búsqueda */}

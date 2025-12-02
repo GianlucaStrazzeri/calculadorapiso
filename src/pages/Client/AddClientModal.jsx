@@ -8,6 +8,8 @@ export function AddClientModal({ isOpen, onClose, onAddClient }) {
   const [telefono, setTelefono] = useState("");
   const [nota, setNota] = useState("");
 
+  const CLIENTS_KEY = "cr_clients_v1";
+
   if (!isOpen) return null;
 
   const handleSubmit = (e) => {
@@ -16,12 +18,26 @@ export function AddClientModal({ isOpen, onClose, onAddClient }) {
     const trimmedName = nombre.trim();
     if (!trimmedName) return;
 
-    const id = trimmedName
+    // create a readable slug based on the name (e.g. "Juan Perez" -> "juanperez")
+    const baseId = trimmedName
       .toLowerCase()
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
-      .replace(/\s+/g, "_")
-      .replace(/[^a-z0-9_]/g, "");
+      .replace(/\s+/g, "")
+      .replace(/[^a-z0-9]/g, "");
+
+    let id = baseId || String(Date.now());
+    try {
+      const raw = localStorage.getItem(CLIENTS_KEY);
+      const existing = raw ? JSON.parse(raw) : [];
+      let suffix = 2;
+      while (existing.some((c) => c.id === id)) {
+        id = `${baseId}${suffix}`;
+        suffix += 1;
+      }
+    } catch (err) {
+      console.warn("No se pudo comprobar unicidad de id de cliente", err);
+    }
 
     const newClient = {
       id,

@@ -1,5 +1,6 @@
 // ContadorReps.jsx - Contador de repeticiones con peso y calendario de volumen
 import React, { useState, useEffect, useRef } from "react";
+import { useParams } from "react-router-dom";
 import "./ContadorReps.css";
 import { EXERCISES as BASE_EXERCISES } from "./exercisesConfig";
 import ExerciseSelector from "./ExerciseSelector";
@@ -259,6 +260,8 @@ export default function ContadorReps() {
       reps: currentReps,
       weightKg: numericWeight,
       volume,
+      // Attach clientId if one is selected so we can compute per-patient volumes
+      clientId: selectedClientId || null,
       date: new Date(),
     };
 
@@ -340,6 +343,24 @@ export default function ContadorReps() {
   // =======================
   // Totales por ejercicio
   // =======================
+
+  // Read route params (declared once)
+  const params = useParams();
+
+  useEffect(() => {
+    if (params && params.clientId) {
+      try {
+        const id = decodeURIComponent(params.clientId);
+        setSelectedClientId(id);
+      } catch (e) {
+        setSelectedClientId(params.clientId);
+      }
+    }
+  }, [params]);
+
+  const isPatientPublicView = Boolean(params && params.clientId);
+
+  // When viewing a specific client, compute totals only for that client's history
   const totalsByExercise = React.useMemo(() => {
     const map = {};
     allExercises.forEach((ex) => {
@@ -352,19 +373,23 @@ export default function ContadorReps() {
         totalVolume: 0,
       };
     });
-    sessionHistory.forEach((h) => {
+
+    const viewingClientId = params?.clientId || selectedClientId;
+    const filtered = viewingClientId
+      ? sessionHistory.filter((h) => h.clientId === viewingClientId)
+      : sessionHistory;
+
+    filtered.forEach((h) => {
       const key = h.exerciseId;
       if (!map[key]) return;
       const reps = Number(h.reps) || 0;
-      const volume =
-        Number(h.volume) ||
-        (Number(h.weightKg) || 0) * reps;
+      const volume = Number(h.volume) || (Number(h.weightKg) || 0) * reps;
       map[key].reps += reps;
       map[key].series += 1;
       map[key].totalVolume += volume;
     });
     return Object.values(map);
-  }, [sessionHistory, allExercises]);
+  }, [sessionHistory, allExercises, params, selectedClientId]);
 
   // =======================
   // Ejercicios personalizados: añadir desde modal
@@ -400,47 +425,57 @@ export default function ContadorReps() {
   return (
     <>
       <div className="cr-container">
-        {/* HEADER */}
-        <header className="cr-header">
-          <h1 className="cr-title">Contador de Repeticiones</h1>
-          <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
-            <button
-              type="button"
-              onClick={clearLocalData}
-              style={{
-                padding: "2px 2px",
-                borderRadius: 4,
-                border: "1px solid #e5e7eb",
-                background: "#fff",
-                color: "#374151",
-                fontSize: "0.85rem",
-                cursor: "pointer",
-              }}
-            >
-              Borrar datos locales
-            </button>
+        {/* HEADER: ocultar si es vista pública del paciente */}
+        {!isPatientPublicView && (
+          <header className="cr-header">
+            <h1 className="cr-title">Contador de Repeticiones</h1>
+            <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
+              <button
+                type="button"
+                onClick={clearLocalData}
+                style={{
+                  padding: "2px 2px",
+                  borderRadius: 4,
+                  border: "1px solid #e5e7eb",
+                  background: "#fff",
+                  color: "#374151",
+                  fontSize: "0.85rem",
+                  cursor: "pointer",
+                }}
+              >
+                Borrar datos locales
+              </button>
 
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <ClientSelector
-                clients={clients}
-                selectedClientId={selectedClientId}
-                onChangeClient={(id) => setSelectedClientId(id)}
-                onOpenAddClient={() => setShowAddClientModal(true)}
-              />
-              {selectedClientId && (
-                <button
-                  type="button"
-                  className="cr-btn"
-                  onClick={() => setShowAssignModal(true)}
-                  style={{ borderRadius: 999, padding: "6px 8px", fontSize: "0.95rem" }}
-                  title="Asignar ejercicio al cliente"
-                >
-                  ➕
-                </button>
-              )}
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <ClientSelector
+                  clients={clients}
+                    selectedClientId={selectedClientId}
+                    onChangeClient={(id) => {
+                      if (isPatientPublicView) return; // prevent changes in public patient view
+                      setSelectedClientId(id);
+                    }}
+                    onOpenAddClient={() => {
+                      if (isPatientPublicView) return;
+                      setShowAddClientModal(true);
+                    }}
+                    disableAdd={isPatientPublicView}
+                    fixedClientId={isPatientPublicView ? selectedClientId : null}
+                />
+                {selectedClientId && (
+                  <button
+                    type="button"
+                    className="cr-btn"
+                    onClick={() => setShowAssignModal(true)}
+                    style={{ borderRadius: 999, padding: "6px 8px", fontSize: "0.95rem" }}
+                    title="Asignar ejercicio al cliente"
+                  >
+                    ➕
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
-        </header>
+          </header>
+        )}
 
         {/* LAYOUT PRINCIPAL */}
         <div className="cr-layout">
@@ -448,17 +483,21 @@ export default function ContadorReps() {
           <div className="cr-left-column">
             {/* Calendario de volumen movido arriba */}
             <div style={{ marginBottom: 12 }}>
-              <VolumeCalendar sessionHistory={sessionHistory} />
-            
+              {/* If viewing a public patient, show only that patient's history in the calendar */}
+              {isPatientPublicView ? (
+                <VolumeCalendar sessionHistory={sessionHistory.filter((h) => h.clientId === selectedClientId)} />
+              ) : (
+                <VolumeCalendar sessionHistory={sessionHistory} />
+              )}
+
             </div>
 
             <ExerciseSelector
               exercises={allExercises}
               selectedExercise={selectedExercise}
               onChange={handleExerciseChange}
-              onOpenAddExercise={() =>
-                setShowAddExerciseModal(true)
-              }
+              onOpenAddExercise={() => setShowAddExerciseModal(true)}
+              disableAdd={isPatientPublicView}
             />
 
             

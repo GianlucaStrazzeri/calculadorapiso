@@ -1,11 +1,49 @@
 // src/App.jsx
 // Layout principal con navegación + rutas
 
-import { Routes, Route, Link } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Routes, Route, Link, useMatch } from "react-router-dom";
 import DecisionVivienda from "./pages/DecisionVivienda";
 import ContadorReps from "./pages/Ejercicio/ContadorReps";
 
 function Home() {
+  const CLIENTS_KEY = "cr_clients_v1";
+  const STORAGE_KEY = "cr_state_v1";
+  const [clients, setClients] = useState([]);
+  const [volumes, setVolumes] = useState({});
+
+  const reloadClientsAndVolumes = () => {
+    try {
+      const raw = localStorage.getItem(CLIENTS_KEY);
+      if (raw) setClients(JSON.parse(raw));
+    } catch (e) {
+      console.warn("No se pudieron cargar clientes en Home", e);
+    }
+
+    try {
+      const rawState = localStorage.getItem(STORAGE_KEY);
+      if (rawState) {
+        const parsed = JSON.parse(rawState);
+        const hist = Array.isArray(parsed.sessionHistory)
+          ? parsed.sessionHistory
+          : [];
+        const m = {};
+        hist.forEach((h) => {
+          const cid = h.clientId || null;
+          const vol = Number(h.volume) || 0;
+          if (!cid) return;
+          m[cid] = (m[cid] || 0) + vol;
+        });
+        setVolumes(m);
+      }
+    } catch (e) {
+      console.warn("No se pudieron calcular volúmenes enHome", e);
+    }
+  };
+
+  useEffect(() => {
+    reloadClientsAndVolumes();
+  }, []);
   return (
     <div
       style={{
@@ -79,6 +117,40 @@ function Home() {
             Contador de repeticiones
           </Link>
 
+          {/* Quick links per cliente (if any) */}
+          {clients && clients.length > 0 && (
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              {clients.slice(0, 5).map((c) => (
+                <Link
+                  key={c.id}
+                  to={`/contadorreps/${encodeURIComponent(c.id)}`}
+                  style={{
+                    padding: "8px 12px",
+                    borderRadius: 999,
+                    border: "1px solid #e5e7eb",
+                    background: "#fff",
+                    color: "#374151",
+                    fontSize: "0.85rem",
+                    textDecoration: "none",
+                  }}
+                >
+                  {c.nombre}
+                  <span style={{ marginLeft: 8, color: "#6b7280", fontSize: "0.8rem" }}>
+                    ({(volumes[c.id] || 0).toFixed(0)} vol)
+                  </span>
+                </Link>
+              ))}
+
+              <button
+                type="button"
+                onClick={reloadClientsAndVolumes}
+                style={{ padding: "8px 10px", borderRadius: 999, border: "1px solid #e5e7eb", background: "#fff", cursor: "pointer" }}
+              >
+                Recargar
+              </button>
+            </div>
+          )}
+
           {/* Botón secundario (lo puedes usar luego para otra página) */}
           <button
             type="button"
@@ -101,6 +173,7 @@ function Home() {
 }
 
 function App() {
+  const isPatientPublicView = Boolean(useMatch("/contadorreps/:clientId"));
   return (
     <div>
       {/* Barra superior de navegación */}
@@ -118,17 +191,19 @@ function App() {
           zIndex: 10,
         }}
       >
-        <Link
-          to="/"
-          style={{
-            fontWeight: 700,
-            fontSize: "1rem",
-            color: "#111827",
-            textDecoration: "none",
-          }}
-        >
-          🏡 
-        </Link>
+        {!isPatientPublicView && (
+          <Link
+            to="/"
+            style={{
+              fontWeight: 700,
+              fontSize: "1rem",
+              color: "#111827",
+              textDecoration: "none",
+            }}
+          >
+            🏡 
+          </Link>
+        )}
       </nav>
 
       {/* Zona donde se cargan las páginas */}
@@ -136,6 +211,9 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/calculadora" element={<DecisionVivienda />} />
         <Route path="/contador-reps" element={<ContadorReps />} />
+        {/* New routes: support per-client views and alternate path */}
+        <Route path="/contadorreps" element={<ContadorReps />} />
+        <Route path="/contadorreps/:clientId" element={<ContadorReps />} />
       </Routes>
     </div>
   );
