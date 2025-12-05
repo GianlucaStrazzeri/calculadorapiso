@@ -1,0 +1,53 @@
+.evolucion-precio {
+  border: 1px solid #e6eef8;
+  padding: 12px;
+  border-radius: 8px;
+  background: #fff;
+}
+.chart-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.chart-header h3 {
+  margin: 0;
+  font-size: 14px;
+}
+.info-btn {
+  background: #111827;
+  color: #fff;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.chart-wrap {
+  margin-top: 10px;
+}
+.info-modal {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 6px;
+  background: #f8fafc;
+  border: 1px solid #e6eef8;
+}
+.info-modal h4 {
+  margin: 0 0 8px 0;
+}
+.info-modal p {
+  margin: 6px 0;
+}
+.info-modal ul {
+  margin: 8px 0;
+  padding-left: 18px;
+}
+.close-btn {
+  margin-top: 8px;
+  background: #111827;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}

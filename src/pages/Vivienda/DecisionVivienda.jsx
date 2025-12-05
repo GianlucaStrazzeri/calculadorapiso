@@ -8,7 +8,11 @@
 // - Estima qué alquiler debería tener la vivienda para “pagarse sola” y dar rentabilidad
 
 import { useState, useMemo, useEffect } from "react";
-import WebPageGptModal from "./FetchWeb/WebPageGptModal";
+import WebPageGptModal from "../FetchWeb/WebPageGptModal";
+import OpcionAlquiler from "./OpcionAlquiler";
+import EscenariosHipotecas from "./EscenariosHipotecas";
+import EvolucionDelPrecio from "./EvolucionDelPrecio";
+import ReformaCocina from "./ReformaCocina";
 
 function DecisionVivienda() {
   const [precioCompra, setPrecioCompra] = useState(145000); // precio al que compras
@@ -90,10 +94,10 @@ function DecisionVivienda() {
       : precioVentaEstimadoTabla;
 
   // Impuestos de compra según año de venta:
-  // - Si vendes antes de 3 años -> 10 %
-  // - Si vendes a partir del año 3 -> 8 %
-  const tipoImpuestoCompra = anioVenta < 3 ? 10 : 8;
-  const impuestosCompra = (precioCompra * tipoImpuestoCompra) / 100;
+  // Impuesto de compra: permite seleccionar manualmente (valores frecuentes: 0, 6, 8, 10)
+  const defaultImpuestoCompra = anioVenta < 3 ? 10 : 8;
+  const [impuestoCompraPercent, setImpuestoCompraPercent] = useState(defaultImpuestoCompra);
+  const impuestosCompra = (precioCompra * (impuestoCompraPercent || 0)) / 100;
 
   // Intereses pagados hasta el año de venta + saldo restante de hipoteca en ese momento
   const {
@@ -280,7 +284,10 @@ function DecisionVivienda() {
   useEffect(() => {
     try {
       const raw = localStorage.getItem(SCENARIOS_KEY);
-      if (raw) setEscenariosGuardados(JSON.parse(raw));
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        setEscenariosGuardados(Array.isArray(parsed) ? parsed : []);
+      }
     } catch (e) {
       console.warn("No se pudieron cargar escenarios guardados", e);
     }
@@ -312,12 +319,17 @@ function DecisionVivienda() {
         precioVentaManual,
         alquilerPosible,
         añosHipoteca,
+        importeFinanciado,
+        cuotaMensual,
+          impuestoCompraPercent,
+          impuestosCompra,
         // labels también como parte del escenario
         scenarioLabels,
       },
     };
 
-    const next = [payload, ...escenariosGuardados].slice(0, 50);
+    const prev = Array.isArray(escenariosGuardados) ? escenariosGuardados : [];
+    const next = [payload, ...prev].slice(0, 50);
     setEscenariosGuardados(next);
     try {
       localStorage.setItem(SCENARIOS_KEY, JSON.stringify(next));
@@ -325,6 +337,19 @@ function DecisionVivienda() {
       console.warn("No se pudo guardar escenario", e);
     }
     setScenarioName("");
+  }
+
+  function updateScenarioName(idx, newName) {
+    const prev = Array.isArray(escenariosGuardados) ? escenariosGuardados : [];
+    const next = [...prev];
+    if (!next[idx]) return;
+    next[idx] = { ...next[idx], name: newName };
+    setEscenariosGuardados(next);
+    try {
+      localStorage.setItem(SCENARIOS_KEY, JSON.stringify(next));
+    } catch (e) {
+      console.warn("No se pudo actualizar nombre del escenario", e);
+    }
   }
 
   function loadScenario(idx) {
@@ -345,11 +370,13 @@ function DecisionVivienda() {
     setPrecioVentaManualFromSaved(d.precioVentaManual);
     setAlquilerPosibleFromSaved(d.alquilerPosible);
     setAniosHipoteca(d.añosHipoteca || añosHipoteca);
+    if (typeof d.impuestoCompraPercent === 'number') setImpuestoCompraPercentFromSaved(d.impuestoCompraPercent);
     if (d.scenarioLabels) setScenarioLabels(d.scenarioLabels);
   }
 
   function deleteScenario(idx) {
-    const next = escenariosGuardados.filter((_, i) => i !== idx);
+    const prev = Array.isArray(escenariosGuardados) ? escenariosGuardados : [];
+    const next = prev.filter((_, i) => i !== idx);
     setEscenariosGuardados(next);
     try {
       localStorage.setItem(SCENARIOS_KEY, JSON.stringify(next));
@@ -397,6 +424,10 @@ function DecisionVivienda() {
   }
   function setAlquilerPosibleFromSaved(v) {
     if (typeof v === "number") setAlquilerPosible(v);
+  }
+
+  function setImpuestoCompraPercentFromSaved(v) {
+    if (typeof v === 'number') setImpuestoCompraPercent(v);
   }
 
   function saveLabelsToStorage() {
@@ -565,6 +596,8 @@ function DecisionVivienda() {
                   }}
                 >
                   <th style={thStyle}>Precio de compra (€)</th>
+                  <th style={thStyle}>Imp. compra (%)</th>
+                  <th style={thStyle}>Imp. compra (€)</th>
                   <th style={thStyle}>Valor mercado actual (€)</th>
                   <th style={thStyle}>Entrada (€)</th>
                   <th style={thStyle}>Interés hipoteca (%)</th>
@@ -588,6 +621,22 @@ function DecisionVivienda() {
                       min={0}
                       style={inputStyle}
                     />
+                  </td>
+                  <td style={tdStyle}>
+                    <label style={{ fontSize: '0.85rem' }}>
+                      Imp. compra (%)
+                      <select value={impuestoCompraPercent} onChange={(e) => setImpuestoCompraPercent(Number(e.target.value))} style={{ ...inputStyle, marginTop: 6 }}>
+                        <option value={0}>0%</option>
+                        <option value={6}>6%</option>
+                        <option value={8}>8%</option>
+                        <option value={10}>10%</option>
+                      </select>
+                    </label>
+                  </td>
+                  <td style={tdStyle}>
+                    <div style={{ fontSize: '0.95rem', paddingTop: 8 }}>
+                      <strong>{impuestosCompra.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</strong>
+                    </div>
                   </td>
                   <td style={tdStyle}>
                     <input
@@ -682,6 +731,14 @@ function DecisionVivienda() {
             </table>
           </div>
 
+          {/* Escenarios hipotecarios (cards) - aparecen cuando haya escenarios guardados */}
+          <EscenariosHipotecas
+            scenarios={escenariosGuardados}
+            onLoad={loadScenario}
+            onDelete={deleteScenario}
+            onUpdateName={updateScenarioName}
+          />
+
           {/* Panel: guardar / cargar escenarios */}
           <div style={{ marginTop: 12, display: "flex", gap: 8, alignItems: "flex-start", flexWrap: "wrap" }}>
             <input
@@ -715,6 +772,16 @@ function DecisionVivienda() {
               </div>
             )}
           </div>
+        </section>
+
+        {/* Visual: evolución del precio (ilustrativo) */}
+        <section style={{ marginTop: "18px" }}>
+          <EvolucionDelPrecio />
+        </section>
+
+        {/* Insertar: componente Reforma de cocina (antes del punto 3) */}
+        <section style={{ marginTop: "18px" }}>
+          <ReformaCocina />
         </section>
 
         {/* Resumen rápido de hipoteca, alquiler y gastos */}
@@ -817,7 +884,7 @@ function DecisionVivienda() {
             style={{
               display: "flex",
               alignItems: "center",
-              gap: "8px",
+              gap: "12px",
               marginBottom: "10px",
               flexWrap: "wrap",
             }}
@@ -825,11 +892,48 @@ function DecisionVivienda() {
             <span style={{ fontSize: "0.9rem", color: "#374151" }}>
               Revalorización anual:
             </span>
+
+            <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+              <button
+                onClick={() => setPorcentajeRevalorizacion(2)}
+                style={{
+                  padding: "6px 10px",
+                  borderRadius: 8,
+                  border: porcentajeRevalorizacion === 2 ? "2px solid #2563eb" : "1px solid #d1d5db",
+                  background: porcentajeRevalorizacion === 2 ? "#eff6ff" : "#fff",
+                }}
+              >
+                Pesimista (2%)
+              </button>
+              <button
+                onClick={() => setPorcentajeRevalorizacion(4)}
+                style={{
+                  padding: "6px 10px",
+                  borderRadius: 8,
+                  border: porcentajeRevalorizacion === 4 ? "2px solid #2563eb" : "1px solid #d1d5db",
+                  background: porcentajeRevalorizacion === 4 ? "#eff6ff" : "#fff",
+                }}
+              >
+                Base (4%)
+              </button>
+              <button
+                onClick={() => setPorcentajeRevalorizacion(6)}
+                style={{
+                  padding: "6px 10px",
+                  borderRadius: 8,
+                  border: porcentajeRevalorizacion === 6 ? "2px solid #2563eb" : "1px solid #d1d5db",
+                  background: porcentajeRevalorizacion === 6 ? "#eff6ff" : "#fff",
+                }}
+              >
+                Positivo (6%)
+              </button>
+
+              <div style={{ fontWeight: 700, marginLeft: 8 }}>{porcentajeRevalorizacion}%</div>
+            </div>
+
             <select
               value={porcentajeRevalorizacion}
-              onChange={(e) =>
-                setPorcentajeRevalorizacion(Number(e.target.value))
-              }
+              onChange={(e) => setPorcentajeRevalorizacion(Number(e.target.value))}
               style={{
                 padding: "6px 10px",
                 borderRadius: "999px",
@@ -1003,7 +1107,7 @@ function DecisionVivienda() {
             {/* GASTOS ASOCIADOS A COMPRAR */}
             <div style={cardMini}>
               <span style={labelMini}>
-                Impuestos de compra ({tipoImpuestoCompra}%)
+                Impuestos de compra ({impuestoCompraPercent}%)
               </span>
               <strong style={valueMini}>
                 {impuestosCompra.toLocaleString("es-ES", {
@@ -1515,6 +1619,11 @@ function DecisionVivienda() {
               </div>
             </div>
           </div>
+        </section>
+
+        {/* 6. Estimador detallado de alquiler (componente separado) */}
+        <section style={{ marginTop: "32px" }}>
+          <OpcionAlquiler />
         </section>
       </div>
     </div>

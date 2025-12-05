@@ -1,0 +1,12 @@
+.escenarios-hipotecas { margin-top: 12px; }
+.escenarios-hipotecas h3 { margin: 8px 0 12px 0; font-size: 1rem; }
+.escenarios-hipotecas .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.escenarios-hipotecas .card { background: #fff; border: 1px solid #e6eef8; padding: 12px; border-radius: 10px; box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04); }
+.escenarios-hipotecas .card-header { display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:8px; }
+.escenarios-hipotecas .title { font-weight:700; font-size:0.95rem; }
+.escenarios-hipotecas .actions button { margin-left:6px; padding:6px 8px; border-radius:6px; border:1px solid #e5e7eb; background:#f8fafc; cursor:pointer; }
+.escenarios-hipotecas .card-body { display:flex; flex-direction:column; gap:6px; }
+.escenarios-hipotecas .kv { display:flex; justify-content:space-between; font-size:0.9rem; }
+.escenarios-hipotecas .kv.small { color:#6b7280; font-size:0.85rem; }
+.escenarios-hipotecas .edit-row { display:flex; gap:8px; align-items:center; }
+.escenarios-hipotecas input { padding:6px 8px; border:1px solid #d1d5db; border-radius:6px; }

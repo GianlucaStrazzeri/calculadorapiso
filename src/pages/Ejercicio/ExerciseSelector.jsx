@@ -3,6 +3,8 @@ import React, { useState, useMemo } from "react";
 import { EXERCISE_TYPES } from "./exercisesConfig";
 import "./ContadorReps.css";
 import VideoPreview from "./VideoPreview";
+import ModalFiltroEjercicios from "./ModalFiltroEjercicios";
+import { DEFAULT_AREAS, DEFAULT_EQUIPMENT, DEFAULT_GOALS } from "./filtersConfig";
 
 export default function ExerciseSelector({
   exercises,
@@ -12,17 +14,80 @@ export default function ExerciseSelector({
   disableAdd = false,
 }) {
   const [searchTerm, setSearchTerm] = useState("");
+  const [equipmentFilter, setEquipmentFilter] = useState("");
+  const [goalFilter, setGoalFilter] = useState("");
+  const [areaFilter, setAreaFilter] = useState("");
+  const [levelFilter, setLevelFilter] = useState("");
+  const [showFiltersModal, setShowFiltersModal] = useState(false);
   // Always show the search panel (no quick access buttons)
   const [showSearchPanel] = useState(true);
 
-  const filteredExercises = useMemo(() => {
-    const term = searchTerm.toLowerCase();
-    return exercises.filter((ex) => {
-      if (!term) return true;
-      const text = `${ex.label} ${ex.id}`.toLowerCase();
-      return text.includes(term);
+  // derive filter options from exercises metadata (if present)
+  const filterOptions = useMemo(() => {
+    const eq = new Set();
+    const goals = new Set();
+    const areas = new Set();
+    const levels = new Set();
+    (exercises || []).forEach((ex) => {
+      if (ex.equipment) {
+        if (Array.isArray(ex.equipment)) ex.equipment.forEach((v) => eq.add(String(v)));
+        else eq.add(String(ex.equipment));
+      }
+      if (ex.goal) {
+        if (Array.isArray(ex.goal)) ex.goal.forEach((v) => goals.add(String(v)));
+        else goals.add(String(ex.goal));
+      }
+      if (ex.area) areas.add(String(ex.area));
+      if (ex.level) levels.add(String(ex.level));
     });
-  }, [exercises, searchTerm]);
+    return {
+      equipment: Array.from(eq).sort(),
+      goals: Array.from(goals).sort(),
+      areas: Array.from(areas).sort(),
+      levels: Array.from(levels).sort(),
+    };
+  }, [exercises]);
+
+  // Merge derived options with defaults: use defaults when derived lists are empty
+  const mergedOptions = React.useMemo(() => ({
+    equipment: filterOptions.equipment && filterOptions.equipment.length > 0 ? filterOptions.equipment : DEFAULT_EQUIPMENT,
+    goals: filterOptions.goals && filterOptions.goals.length > 0 ? filterOptions.goals : DEFAULT_GOALS,
+    areas: filterOptions.areas && filterOptions.areas.length > 0 ? filterOptions.areas : DEFAULT_AREAS,
+    levels: filterOptions.levels && filterOptions.levels.length > 0 ? filterOptions.levels : ["inicial", "medio", "avanzado"],
+  }), [filterOptions]);
+
+  const filteredExercises = useMemo(() => {
+    const term = String(searchTerm || "").toLowerCase();
+    return exercises.filter((ex) => {
+      // search text
+      const text = `${ex.label || ""} ${ex.id || ""}`.toLowerCase();
+      if (term && !text.includes(term)) return false;
+
+      // equipment filter
+      if (equipmentFilter) {
+        const eq = ex.equipment ? (Array.isArray(ex.equipment) ? ex.equipment : [ex.equipment]) : [];
+        if (!eq.map(String).map((s) => s.toLowerCase()).includes(equipmentFilter.toLowerCase())) return false;
+      }
+
+      // goal filter
+      if (goalFilter) {
+        const g = ex.goal ? (Array.isArray(ex.goal) ? ex.goal : [ex.goal]) : [];
+        if (!g.map(String).map((s) => s.toLowerCase()).includes(goalFilter.toLowerCase())) return false;
+      }
+
+      // area filter
+      if (areaFilter) {
+        if (!ex.area || String(ex.area).toLowerCase() !== areaFilter.toLowerCase()) return false;
+      }
+
+      // level filter
+      if (levelFilter) {
+        if (!ex.level || String(ex.level).toLowerCase() !== levelFilter.toLowerCase()) return false;
+      }
+
+      return true;
+    });
+  }, [exercises, searchTerm, equipmentFilter, goalFilter, areaFilter, levelFilter]);
 
   return (
     <section>
@@ -71,15 +136,34 @@ export default function ExerciseSelector({
             background: "#ffffff",
           }}
         >
-          <div className="cr-exercise-search-row">
-            <input
-              type="text"
-              className="cr-exercise-search-input"
-              placeholder="Buscar ejercicio (nombre, tipo...)"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
+              <div className="cr-exercise-search-row" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <input
+                  type="text"
+                  className="cr-exercise-search-input"
+                  placeholder="Buscar ejercicio (nombre, tipo...)"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  style={{ flex: 1 }}
+                />
+                <button type="button" className="cr-btn" onClick={() => setShowFiltersModal(true)} style={{ padding: '6px 10px' }} title="Abrir filtros">
+                  Filtros
+                </button>
+              </div>
+
+          {/* Filters moved to modal (open via button on the right of the search input) */}
+          <ModalFiltroEjercicios
+            isOpen={showFiltersModal}
+            onClose={() => setShowFiltersModal(false)}
+            filters={{ equipment: equipmentFilter, goal: goalFilter, area: areaFilter, level: levelFilter, searchTerm }}
+            setFilters={(next) => {
+              setEquipmentFilter(next.equipment || "");
+              setGoalFilter(next.goal || "");
+              setAreaFilter(next.area || "");
+              setLevelFilter(next.level || "");
+              if (typeof next.searchTerm === "string") setSearchTerm(next.searchTerm);
+            }}
+            options={mergedOptions}
+          />
 
           <div
             style={{

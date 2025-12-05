@@ -1,0 +1,292 @@
+/* ReformaCocina.css - Estilos para el panel de análisis de reforma de cocina */
+
+.reforma-root {
+  min-height: 100vh;
+  background-color: #e5e7eb; /* slate-200 */
+  padding: 24px;
+  display: flex;
+  justify-content: center;
+  box-sizing: border-box;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+}
+
+.reforma-container {
+  width: 100%;
+  max-width: 1120px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.reforma-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.reforma-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #020617; /* slate-950 */
+  margin: 0;
+}
+
+.reforma-subtitle {
+  font-size: 0.85rem;
+  color: #64748b; /* slate-500 */
+  margin: 0;
+}
+
+/* Card genérico */
+
+.reforma-card {
+  background-color: #ffffff;
+  border-radius: 18px;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+  padding: 18px 20px;
+  box-sizing: border-box;
+}
+
+.reforma-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.reforma-card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #020617;
+  margin: 0;
+}
+
+/* Botones */
+
+.reforma-button-secondary {
+  border-radius: 999px;
+  border: 1px solid #cbd5f5;
+  background-color: #ffffff;
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #0f172a;
+  cursor: pointer;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.reforma-button-secondary:hover {
+  background-color: #f8fafc;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+}
+
+.reforma-link-danger {
+  background: none;
+  border: none;
+  color: #e11d48; /* rose-600 */
+  font-size: 0.75rem;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+}
+
+/* Tabla */
+
+.reforma-table-wrapper {
+  overflow-x: auto;
+}
+
+.reforma-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+}
+
+.reforma-table thead {
+  background-color: #f8fafc;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  color: #64748b;
+}
+
+.reforma-table th,
+.reforma-table td {
+  padding: 8px 6px;
+  border-bottom: 1px solid #e2e8f0;
+  text-align: left;
+}
+
+.reforma-text-right {
+  text-align: right;
+}
+
+.reforma-table tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+.reforma-row-footer {
+  background-color: #f8fafc;
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+.reforma-cell-strong {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+/* Inputs */
+
+.reforma-input,
+.reforma-input-number {
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  padding: 5px 8px;
+  font-size: 0.78rem;
+  box-sizing: border-box;
+  outline: none;
+}
+
+.reforma-input-number {
+  text-align: right;
+}
+
+.reforma-input:focus,
+.reforma-input-number:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.4);
+}
+
+/* Footer de la tabla */
+
+.reforma-footer-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.reforma-hint {
+  font-size: 0.72rem;
+  color: #64748b;
+}
+
+.reforma-other-costs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  justify-content: flex-start;
+}
+
+.reforma-other-costs span {
+  color: #475569;
+}
+
+/* Grid de resumen */
+
+.reforma-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .reforma-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .reforma-footer-row {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+/* Resumen económico */
+
+.reforma-summary-list {
+  margin: 0;
+  padding: 0;
+}
+
+.reforma-summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.86rem;
+  margin-bottom: 6px;
+}
+
+.reforma-summary-row dt,
+.reforma-summary-row dd {
+  margin: 0;
+}
+
+.reforma-summary-row dt {
+  color: #64748b;
+}
+
+.reforma-summary-row dd {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.reforma-summary-row-total {
+  border-top: 1px solid #e2e8f0;
+  padding-top: 6px;
+  margin-top: 4px;
+  font-size: 0.9rem;
+}
+
+.reforma-note {
+  font-size: 0.72rem;
+  color: #64748b;
+  margin-top: 10px;
+}
+
+/* Bloques de rentabilidad */
+
+.reforma-block {
+  margin-bottom: 14px;
+}
+
+.reforma-block-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #0f172a;
+  margin: 0 0 6px 0;
+}
+
+.reforma-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+@media (min-width: 640px) {
+  .reforma-grid-2 {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.reforma-label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: #475569;
+}
+
+/* Caja destacada */
+
+.reforma-highlight-box {
+  margin-top: 6px;
+  border-radius: 12px;
+  background-color: #f8fafc;
+  padding: 8px 10px;
+  font-size: 0.78rem;
+}

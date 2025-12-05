@@ -3,7 +3,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Routes, Route, Link, useMatch } from "react-router-dom";
-import DecisionVivienda from "./pages/DecisionVivienda";
+import DecisionVivienda from "./pages/Vivienda/DecisionVivienda";
 import ContadorReps from "./pages/Ejercicio/ContadorReps";
 
 function Home() {

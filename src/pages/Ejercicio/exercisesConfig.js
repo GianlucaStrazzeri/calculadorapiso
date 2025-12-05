@@ -6,7 +6,7 @@ export const EXERCISE_TYPES = {
   WEIGHTED: "weighted",
 };
 
-export const EXERCISES = [
+const RAW_EXERCISES = [
   // =========================
   // EMPUJE TREN SUPERIOR
   // =========================
@@ -398,6 +398,36 @@ export const EXERCISES = [
       "Combinación de sentadilla frontal y press de hombros. Ejercicio global para fuerza y capacidad cardiorrespiratoria.",
   },
   {
+    id: "power_clean",
+    label: "Power clean (cargada de potencia)",
+    videoTitle: "Power Clean - Técnica y ejecución",
+    videoUrl: "https://www.youtube.com/watch?v=I31BobyRSWc",
+    color: "#ef4444",
+    type: EXERCISE_TYPES.WEIGHTED,
+    description:
+      "Power clean (cargada de potencia): levantamiento olímpico que desarrolla fuerza-explosiva y coordinación entre cadena posterior, core y recepción. Trabaja caderas, trapecio y extensores de rodilla; importante técnica y progresiones antes de trabajar con carga máxima.",
+  },
+  {
+    id: "snatch",
+    label: "Snatch (arrancada)",
+    videoTitle: "Snatch - Técnica completa",
+    videoUrl: "https://www.youtube.com/watch?v=yHZ1eZ8fJjc",
+    color: "#ef9a4a",
+    type: EXERCISE_TYPES.WEIGHTED,
+    description:
+      "Snatch (arrancada): levantamiento olímpico para máxima potencia y rango de movimiento. Requiere movilidad y técnica para traer la barra por encima de la cabeza en un solo movimiento. Ideal para potencia, estabilidad de hombro y coordinación.",
+  },
+  {
+    id: "biceps_press_militar",
+    label: "Bíceps press militar",
+    videoTitle: "Bíceps press militar - variante",
+    videoUrl: "https://www.youtube.com/watch?v=IEPKg-mYPtg",
+    color: "#60a5fa",
+    type: EXERCISE_TYPES.WEIGHTED,
+    description:
+      "Bíceps press militar: variante compuesta que combina un empuje de hombro con un trabajo de bíceps en la fase de control. Útil como ejercicio accesorio para fuerza del hombro y brazo; controla la técnica y evita impulso del torso.",
+  },
+  {
     id: "burpee",
     label: "Burpee",
     emoji: "💥",
@@ -704,3 +734,31 @@ export const EXERCISES = [
       "Cruces inversos (reverse cable cross) de pie: trabaja deltoides posterior y parte alta de la espalda. Mantén tronco estable y mueve el hombro en un arco controlado.",
   },
 ];
+
+// Normalize and provide sensible defaults so filter logic finds matches
+export const EXERCISES = RAW_EXERCISES.map((e) => {
+  const normalized = { ...e };
+
+  // equipment: array of strings. If missing, infer from type or mark as 'Sin material'
+  if (!normalized.equipment) {
+    if (normalized.type === EXERCISE_TYPES.WEIGHTED) {
+      normalized.equipment = ["Barra"];
+    } else {
+      normalized.equipment = ["Sin material"];
+    }
+  } else if (!Array.isArray(normalized.equipment)) {
+    normalized.equipment = [String(normalized.equipment)];
+  }
+
+  // goal: array of strings
+  if (!normalized.goal) normalized.goal = [];
+  else if (!Array.isArray(normalized.goal)) normalized.goal = [String(normalized.goal)];
+
+  // area: string
+  if (!normalized.area) normalized.area = "General";
+
+  // level: 'inicial'|'medio'|'avanzado'
+  if (!normalized.level) normalized.level = "medio";
+
+  return normalized;
+});

@@ -3,6 +3,7 @@
 
 import React, { useState, useEffect } from "react";
 import { EXERCISE_TYPES } from "./exercisesConfig";
+import { DEFAULT_AREAS, DEFAULT_EQUIPMENT, DEFAULT_GOALS } from "./filtersConfig";
 
 export default function AddExerciseModal({ isOpen, onClose, onAddExercise }) {
   const [label, setLabel] = useState("");
@@ -12,6 +13,10 @@ export default function AddExerciseModal({ isOpen, onClose, onAddExercise }) {
   const [description, setDescription] = useState("");
   const [mediaType, setMediaType] = useState("none"); // "none" | "image" | "video"
   const [mediaUrl, setMediaUrl] = useState("");
+  const [equipment, setEquipment] = useState([]);
+  const [goal, setGoal] = useState([]);
+  const [area, setArea] = useState("");
+  const [level, setLevel] = useState("inicial");
 
   useEffect(() => {
     if (isOpen) {
@@ -23,6 +28,10 @@ export default function AddExerciseModal({ isOpen, onClose, onAddExercise }) {
       setDescription("");
       setMediaType("none");
       setMediaUrl("");
+      setEquipment([]);
+      setGoal([]);
+      setArea("");
+      setLevel("inicial");
     }
   }, [isOpen]);
 
@@ -56,6 +65,12 @@ export default function AddExerciseModal({ isOpen, onClose, onAddExercise }) {
       mediaUrl: mediaType === "none" || !mediaUrl.trim() ? undefined : mediaUrl.trim(),
     };
 
+    // attach optional metadata if present
+    if (equipment && equipment.length > 0) newExercise.equipment = equipment;
+    if (goal && goal.length > 0) newExercise.goal = goal;
+    if (area) newExercise.area = area;
+    if (level) newExercise.level = level;
+
     onAddExercise(newExercise);
   }
 
@@ -64,19 +79,23 @@ export default function AddExerciseModal({ isOpen, onClose, onAddExercise }) {
     inset: 0,
     background: "rgba(15,23,42,0.65)",
     display: "flex",
-    alignItems: "center",
+    alignItems: "flex-start",
     justifyContent: "center",
+    padding: "32px 12px",
     zIndex: 50,
   };
 
   const modalStyle = {
     width: "100%",
-    maxWidth: 480,
+    maxWidth: 720,
     background: "#ffffff",
-    borderRadius: 16,
+    borderRadius: 12,
     padding: "1rem 1.25rem",
     boxShadow: "0 20px 45px rgba(15,23,42,0.4)",
     color: "#0f172a",
+    // make modal vertically scrollable when content exceeds viewport
+    maxHeight: "calc(100vh - 64px)",
+    overflowY: "auto",
   };
 
   const titleStyle = {
@@ -226,6 +245,55 @@ export default function AddExerciseModal({ isOpen, onClose, onAddExercise }) {
                 />
               </div>
             )}
+          </div>
+
+          <div style={{ marginTop: 8, marginBottom: 8 }}>
+            <label style={labelStyle}>Equipamiento (selecciona varios con Ctrl/Cmd)</label>
+            <select
+              multiple
+              value={equipment}
+              onChange={(e) => setEquipment(Array.from(e.target.selectedOptions, (o) => o.value))}
+              style={{ ...inputStyle, height: 110 }}
+            >
+              {DEFAULT_EQUIPMENT.map((eq) => (
+                <option key={eq} value={eq}>{eq}</option>
+              ))}
+            </select>
+          </div>
+
+          <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+            <div style={{ flex: 1 }}>
+              <label style={labelStyle}>Objetivo (puedes seleccionar varios)</label>
+              <select
+                multiple
+                value={goal}
+                onChange={(e) => setGoal(Array.from(e.target.selectedOptions, (o) => o.value))}
+                style={{ ...inputStyle, height: 110 }}
+              >
+                {DEFAULT_GOALS.map((g) => (
+                  <option key={g} value={g}>{g}</option>
+                ))}
+              </select>
+            </div>
+
+            <div style={{ width: 220 }}>
+              <label style={labelStyle}>Zona principal</label>
+              <select value={area} onChange={(e) => setArea(e.target.value)} style={inputStyle}>
+                <option value="">(ninguna)</option>
+                {DEFAULT_AREAS.map((a) => (
+                  <option key={a} value={a}>{a}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div style={{ marginBottom: 8 }}>
+            <label style={labelStyle}>Nivel</label>
+            <select value={level} onChange={(e) => setLevel(e.target.value)} style={inputStyle}>
+              <option value="inicial">Inicial</option>
+              <option value="medio">Medio</option>
+              <option value="avanzado">Avanzado</option>
+            </select>
           </div>
 
           <div
