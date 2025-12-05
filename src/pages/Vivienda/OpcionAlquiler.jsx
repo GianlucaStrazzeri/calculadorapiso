@@ -36,6 +36,11 @@ export default function OpcionAlquiler() {
   const [anosAlquiler, setAnosAlquiler] = useState(5);
   const [rentaMensualP1, setRentaMensualP1] = useState(400);
   const [rentaMensualP2, setRentaMensualP2] = useState(400);
+  const [entrada, setEntrada] = useState(20000);
+  const [añosHipoteca, setAniosHipoteca] = useState(30);
+  const [interesHipoteca, setInteresHipoteca] = useState(2.5);
+  const [ingresoBrutoP1, setIngresoBrutoP1] = useState(18000);
+  const [ingresoBrutoP2, setIngresoBrutoP2] = useState(18000);
   const [porcPerdidaFiscalAnual, setPorcPerdidaFiscalAnual] = useState(2);
   const [perdidaExencion, setPerdidaExencion] = useState(0);
 
@@ -64,6 +69,37 @@ export default function OpcionAlquiler() {
   const perdidaFiscalEstim = useMemo(() => (precioCompra * (Number(porcPerdidaFiscalAnual || 0) / 100) * anosAlquiler), [precioCompra, porcPerdidaFiscalAnual, anosAlquiler]);
 
   const totalRentasRecibidas = useMemo(() => rentaMensualTotal * 12 * anosAlquiler, [rentaMensualTotal, anosAlquiler]);
+
+  // Hipoteca: método francés (anualidad)
+  const importeFinanciado = useMemo(() => Math.max(0, precioCompra - (Number(entrada) || 0)), [precioCompra, entrada]);
+  const cuotaHipotecaMensual = useMemo(() => {
+    const P = Number(importeFinanciado || 0);
+    const n = Math.max(1, Number(añosHipoteca || 0)) * 12;
+    const r = (Number(interesHipoteca) || 0) / 100 / 12;
+    if (P <= 0 || n <= 0) return 0;
+    if (r === 0) return P / n;
+    return (P * r) / (1 - Math.pow(1 + r, -n));
+  }, [importeFinanciado, añosHipoteca, interesHipoteca]);
+
+  // Simular intereses pagados hasta anosAlquiler y saldo restante
+  const { interesesPagadosHipotecaHasta, saldoHipotecaRestante } = useMemo(() => {
+    const P = Number(importeFinanciado || 0);
+    const nTotal = Math.max(1, Number(añosHipoteca || 0)) * 12;
+    const mesesHasta = Math.min(nTotal, Math.max(0, Number(anosAlquiler || 0)) * 12);
+    const r = (Number(interesHipoteca) || 0) / 100 / 12;
+    let saldo = P;
+    let interesesAcum = 0;
+    const cuota = cuotaHipotecaMensual;
+    for (let m = 0; m < mesesHasta && saldo > 0; m++) {
+      const interesMes = saldo * r;
+      const amortizacion = cuota - interesMes;
+      // defensiva
+      if (!isFinite(amortizacion)) break;
+      saldo = Math.max(0, saldo - amortizacion);
+      interesesAcum += interesMes;
+    }
+    return { interesesPagadosHipotecaHasta: interesesAcum, saldoHipotecaRestante: saldo };
+  }, [importeFinanciado, añosHipoteca, interesHipoteca, anosAlquiler, cuotaHipotecaMensual]);
 
   // Break-even monthly rent (total per month, both partners) to cover the extra tax + fiscal losses + exencion loss
   const breakEvenMonthlyTotal = useMemo(() => {
@@ -100,6 +136,18 @@ export default function OpcionAlquiler() {
           <input type="number" value={valorConstruccion} onChange={e => setValorConstruccion(Number(e.target.value))} />
         </label>
 
+        <label>Entrada (€)
+          <input type="number" value={entrada} onChange={e => setEntrada(Number(e.target.value))} />
+        </label>
+
+        <label>Años hipoteca
+          <input type="number" min="1" value={añosHipoteca} onChange={e => setAniosHipoteca(Number(e.target.value))} />
+        </label>
+
+        <label>Interés hipoteca anual (%)
+          <input type="number" step="0.01" value={interesHipoteca} onChange={e => setInteresHipoteca(Number(e.target.value))} />
+        </label>
+
         <label>Años de alquiler
           <input type="number" min="0" value={anosAlquiler} onChange={e => setAnosAlquiler(Number(e.target.value))} />
         </label>
@@ -134,6 +182,15 @@ export default function OpcionAlquiler() {
 
       <section className="assumptions">
         <h4>Asunciones y ajustes</h4>
+        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+          <label>Ingreso bruto anual - Persona 1 (€)
+            <input type="number" value={ingresoBrutoP1} onChange={e => setIngresoBrutoP1(Number(e.target.value))} />
+          </label>
+
+          <label>Ingreso bruto anual - Persona 2 (€)
+            <input type="number" value={ingresoBrutoP2} onChange={e => setIngresoBrutoP2(Number(e.target.value))} />
+          </label>
+        </div>
         <label>Porcentaje anual perdido por cambio fiscal (%)
           <input type="number" value={porcPerdidaFiscalAnual} onChange={e => setPorcPerdidaFiscalAnual(Number(e.target.value))} />
         </label>
@@ -209,6 +266,69 @@ export default function OpcionAlquiler() {
           <div className="result-item">
             <div><strong>Break-even por persona (50/50):</strong> € {(breakEvenMonthlyTotal/2).toFixed(2)} / mes</div>
             <div className="formula">Fórmula: break-even total ÷ 2 = {breakEvenMonthlyTotal.toLocaleString()} ÷ 2 = {(breakEvenMonthlyTotal/2).toLocaleString()}</div>
+          </div>
+
+          <div className="result-item">
+            <div><strong>Importe financiado (hipoteca):</strong> {importeFinanciado.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
+            <div className="formula">Fórmula: precio compra − entrada = {precioCompra.toLocaleString()} − {entrada.toLocaleString()} = {importeFinanciado.toLocaleString()}</div>
+          </div>
+
+          <div className="result-item">
+            <div><strong>Cuota mensual (método francés):</strong> {cuotaHipotecaMensual.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
+            <div className="formula">Fórmula: cuota = P·r / (1 − (1+r)^−n) donde r = interés anual/12, n = meses totales</div>
+          </div>
+
+          <div className="result-item">
+            <div><strong>Intereses pagados hasta {anosAlquiler} años:</strong> {interesesPagadosHipotecaHasta.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
+            <div className="formula">Suma de intereses mensuales pagados durante {anosAlquiler} años según cuota y saldo pendiente (simulación mes a mes)</div>
+          </div>
+
+          <div className="result-item">
+            <div><strong>Saldo pendiente tras {anosAlquiler} años:</strong> {saldoHipotecaRestante.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
+            <div className="formula">Saldo restante calculado tras aplicar amortizaciones mensuales según método francés.</div>
+          </div>
+
+          <div className="result-item">
+            <div><strong>Ingreso bruto anual (Persona 1):</strong> {ingresoBrutoP1.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
+            <div className="formula">Ingresos brutos anuales utilizados para estimar impacto fiscal.</div>
+          </div>
+
+          <div className="result-item">
+            <div><strong>Ingreso bruto anual (Persona 2):</strong> {ingresoBrutoP2.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</div>
+            <div className="formula">Ingresos brutos anuales utilizados para estimar impacto fiscal.</div>
+          </div>
+
+          <div className="result-item">
+            <div><strong>Impuesto estimado sobre ganancia (con amortización):</strong> € {impuestoConAmort.toFixed(2)}</div>
+            <div className="formula">Se muestra también el reparto hipotético 50/50 por persona abajo.</div>
+          </div>
+
+          <div className="result-item">
+            <div><strong>Impuesto por persona (50/50)</strong></div>
+            <strong>{(impuestoConAmort/2).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</strong>
+            <div className="formula">Fórmula: impuesto total ÷ 2 = {impuestoConAmort.toLocaleString()} ÷ 2 = {(impuestoConAmort/2).toLocaleString()}</div>
+          </div>
+
+          <div className="result-item">
+            <div><strong>% del impuesto (por persona) respecto a su ingreso bruto</strong></div>
+            <strong>{
+              (() => {
+                const p = ingresoBrutoP1 || 0;
+                return p > 0 ? ((impuestoConAmort/2)/p*100).toFixed(2) + '%' : '-';
+              })()
+            }</strong>
+            <div className="formula">Persona 1: impuesto/ingreso bruto anual × 100</div>
+          </div>
+
+          <div className="result-item">
+            <div><strong>% del impuesto (por persona) respecto a su ingreso bruto</strong></div>
+            <strong>{
+              (() => {
+                const p = ingresoBrutoP2 || 0;
+                return p > 0 ? ((impuestoConAmort/2)/p*100).toFixed(2) + '%' : '-';
+              })()
+            }</strong>
+            <div className="formula">Persona 2: impuesto/ingreso bruto anual × 100</div>
           </div>
         </div>
 

@@ -53,8 +53,9 @@ export default function EscenariosHipotecas({ scenarios = [], onLoad = () => {},
               <div className="kv"><span>Cuota mensual estimada</span><strong>{formatMoney(s.data?.cuotaMensual)}</strong></div>
               <div className="kv"><span>Total interés estimado</span><strong>{
                 (() => {
+                  if (typeof s.data?.totalInteresesEstimados === 'number') return formatMoney(s.data.totalInteresesEstimados);
                   const cuota = Number(s.data?.cuotaMensual || 0);
-                  const años = Number(s.data?.añosHipoteca || s.data?.añosHipoteca === 0 ? s.data?.añosHipoteca : 0);
+                  const años = Number(s.data?.añosHipoteca || (s.data?.añosHipoteca === 0 ? s.data?.añosHipoteca : 0));
                   const importe = Number(s.data?.importeFinanciado || 0);
                   const meses = (Number.isFinite(años) ? años : 0) * 12;
                   if (!cuota || meses <= 0) return '-';

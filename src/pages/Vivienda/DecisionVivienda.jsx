@@ -13,6 +13,8 @@ import OpcionAlquiler from "./OpcionAlquiler";
 import EscenariosHipotecas from "./EscenariosHipotecas";
 import EvolucionDelPrecio from "./EvolucionDelPrecio";
 import ReformaCocina from "./ReformaCocina";
+import EvaluaGPT from "./EvaluaGPT";
+import ViviendaDashboard from "./ViviendaDashboard";
 
 function DecisionVivienda() {
   const [precioCompra, setPrecioCompra] = useState(145000); // precio al que compras
@@ -35,6 +37,9 @@ function DecisionVivienda() {
   // Mejoras realizadas en la vivienda
   const [mejoras, setMejoras] = useState(0); // €
 
+  // Mostrar/ocultar el dashboard compacto al final
+  const [showDashboard, setShowDashboard] = useState(false);
+
   // Precio de venta que tú estimas manualmente
   const [precioVentaManual, setPrecioVentaManual] = useState(0);
 
@@ -45,17 +50,68 @@ function DecisionVivienda() {
   const [tipoHipoteca, setTipoHipoteca] = useState("fija"); // 'fija' o 'variable'
   const [gestorHipotecario, setGestorHipotecario] = useState(3000); // gasto deducible en €
 
+  // Hipoteca mixta: años de tipo fijo y estimación de euribor+margen para la parte variable
+  const [añosFijo, setAniosFijo] = useState(5); // años en tipo fijo al inicio
+  const [euribor, setEuribor] = useState(3.5); // euribor estimado anual (%) para la parte variable
+  const [margen, setMargen] = useState(1.5); // margen bancario (%) aplicado sobre euribor
+
   // Parámetros de hipoteca
   const importeFinanciado = Math.max(precioCompra - entrada, 0);
   const [añosHipoteca, setAniosHipoteca] = useState(30);
   const mesesTotales = añosHipoteca * 12;
-  const interesMensual = interes / 100 / 12;
 
-  const cuotaMensual =
-    interesMensual === 0 || importeFinanciado <= 0
-      ? importeFinanciado / mesesTotales || 0
-      : (importeFinanciado * interesMensual) /
-        (1 - Math.pow(1 + interesMensual, -mesesTotales));
+  // monthly rates for fixed and variable portions
+  const fixedMonthlyRate = (Number(interes) || 0) / 100 / 12;
+  const variableMonthlyRate = ((Number(euribor) || 0) + (Number(margen) || 0)) / 100 / 12;
+
+  // helper: annuity payment
+  function annuity(principal, monthlyRate, months) {
+    if (!principal || months <= 0) return 0;
+    if (!monthlyRate) return principal / months;
+    return (principal * monthlyRate) / (1 - Math.pow(1 + monthlyRate, -months));
+  }
+
+  // compute initial (fixed) monthly payment based on fixed rate over full term
+  const cuotaInicial = annuity(importeFinanciado, fixedMonthlyRate, mesesTotales);
+
+  // simulate amortization through fixed period to compute remaining principal
+  const fixedMonths = Math.min(Math.max(Number(añosFijo) || 0, 0) * 12, mesesTotales);
+  let saldoAfterFixed = importeFinanciado;
+  if (cuotaInicial > 0 && fixedMonths > 0) {
+    for (let m = 0; m < fixedMonths && saldoAfterFixed > 0; m++) {
+      const interesMes = saldoAfterFixed * fixedMonthlyRate;
+      const amort = cuotaInicial - interesMes;
+      saldoAfterFixed = Math.max(saldoAfterFixed - amort, 0);
+    }
+  }
+
+  const variableMonths = Math.max(mesesTotales - fixedMonths, 0);
+  const cuotaAfterFixed = variableMonths > 0 ? annuity(saldoAfterFixed, variableMonthlyRate, variableMonths) : 0;
+
+  // cuotaMensual shown is cuotaInicial if there's a fixed period, else cuotaAfterFixed
+  const cuotaMensual = fixedMonths > 0 ? cuotaInicial : cuotaAfterFixed;
+
+  // total estimated interest across the full term (fixed + variable)
+  const totalInteresesEstimados = useMemo(() => {
+    if (!importeFinanciado || mesesTotales <= 0) return 0;
+    const fm = Math.min(Math.max(Number(añosFijo) || 0, 0) * 12, mesesTotales);
+    const vm = Math.max(mesesTotales - fm, 0);
+    let saldoSim = importeFinanciado;
+    let interesesSum = 0;
+    const cuotaIniLocal = cuotaInicial;
+    const cuotaAfterLocal = cuotaAfterFixed;
+
+    for (let m = 0; m < mesesTotales && saldoSim > 0; m++) {
+      const isFixed = m < fm;
+      const rate = isFixed ? fixedMonthlyRate : variableMonthlyRate;
+      const cuota = isFixed ? cuotaIniLocal : cuotaAfterLocal;
+      const interesMes = saldoSim * rate;
+      const amort = cuota - interesMes;
+      saldoSim = Math.max(saldoSim - amort, 0);
+      interesesSum += interesMes;
+    }
+    return interesesSum;
+  }, [importeFinanciado, cuotaInicial, cuotaAfterFixed, fixedMonthlyRate, variableMonthlyRate, mesesTotales, añosFijo]);
 
   // Gastos anuales fijos de la vivienda (solo IBI+basura + comunidad)
   const gastosAnualesVivienda = ibiBasura + comunidad * 12;
@@ -105,7 +161,7 @@ function DecisionVivienda() {
     saldoRestanteHipoteca,
     mesesHastaVenta,
   } = useMemo(() => {
-    if (importeFinanciado <= 0 || interesMensual <= 0 || cuotaMensual <= 0) {
+    if (importeFinanciado <= 0 || cuotaMensual <= 0) {
       return {
         interesesPagadosHastaVenta: 0,
         saldoRestanteHipoteca: 0,
@@ -117,10 +173,17 @@ function DecisionVivienda() {
     let saldo = importeFinanciado;
     let interesesAcumulados = 0;
 
+    const fixedMonths = Math.min(Math.max(Number(añosFijo) || 0, 0) * 12, mesesTotales);
+    const cuotaIni = cuotaInicial;
+    const cuotaAfter = cuotaAfterFixed;
+
     for (let i = 0; i < mesesHasta && saldo > 0; i++) {
-      const interesMes = saldo * interesMensual;
+      const isFixed = i < fixedMonths;
+      const rate = isFixed ? fixedMonthlyRate : variableMonthlyRate;
+      const cuota = isFixed ? cuotaIni : cuotaAfter;
+      const interesMes = saldo * rate;
       interesesAcumulados += interesMes;
-      const amortizacion = cuotaMensual - interesMes;
+      const amortizacion = cuota - interesMes;
       saldo = Math.max(saldo - amortizacion, 0);
     }
 
@@ -131,8 +194,12 @@ function DecisionVivienda() {
     };
   }, [
     importeFinanciado,
-    interesMensual,
     cuotaMensual,
+    cuotaInicial,
+    cuotaAfterFixed,
+    fixedMonthlyRate,
+    variableMonthlyRate,
+    añosFijo,
     anioVenta,
     mesesTotales,
   ]);
@@ -215,10 +282,17 @@ function DecisionVivienda() {
       let saldo = importeFinanciado;
       let interesesAcumulados = 0;
 
+      const fixedMonths = Math.min(Math.max(Number(añosFijo) || 0, 0) * 12, mesesTotales);
+      const cuotaIni = cuotaInicial;
+      const cuotaAfter = cuotaAfterFixed;
+
       for (let i = 0; i < mesesHasta && saldo > 0; i++) {
-        const interesMes = saldo * interesMensual;
+        const isFixed = i < fixedMonths;
+        const rate = isFixed ? fixedMonthlyRate : variableMonthlyRate;
+        const cuota = isFixed ? cuotaIni : cuotaAfter;
+        const interesMes = saldo * rate;
         interesesAcumulados += interesMes;
-        const amortizacion = cuotaMensual - interesMes;
+        const amortizacion = cuota - interesMes;
         saldo = Math.max(saldo - amortizacion, 0);
       }
 
@@ -256,8 +330,11 @@ function DecisionVivienda() {
     evolucionPrecio,
     baseValor,
     importeFinanciado,
-    interesMensual,
-    cuotaMensual,
+    cuotaInicial,
+    cuotaAfterFixed,
+    fixedMonthlyRate,
+    variableMonthlyRate,
+    añosFijo,
     mesesTotales,
     precioCompra,
     mejoras,
@@ -321,8 +398,12 @@ function DecisionVivienda() {
         añosHipoteca,
         importeFinanciado,
         cuotaMensual,
-          impuestoCompraPercent,
-          impuestosCompra,
+        añosFijo,
+        euribor,
+        margen,
+        totalInteresesEstimados,
+        impuestoCompraPercent,
+        impuestosCompra,
         // labels también como parte del escenario
         scenarioLabels,
       },
@@ -370,6 +451,9 @@ function DecisionVivienda() {
     setPrecioVentaManualFromSaved(d.precioVentaManual);
     setAlquilerPosibleFromSaved(d.alquilerPosible);
     setAniosHipoteca(d.añosHipoteca || añosHipoteca);
+    if (typeof d.añosFijo === 'number') setAniosFijoFromSaved(d.añosFijo);
+    if (typeof d.euribor === 'number') setEuriborFromSaved(d.euribor);
+    if (typeof d.margen === 'number') setMargenFromSaved(d.margen);
     if (typeof d.impuestoCompraPercent === 'number') setImpuestoCompraPercentFromSaved(d.impuestoCompraPercent);
     if (d.scenarioLabels) setScenarioLabels(d.scenarioLabels);
   }
@@ -424,6 +508,16 @@ function DecisionVivienda() {
   }
   function setAlquilerPosibleFromSaved(v) {
     if (typeof v === "number") setAlquilerPosible(v);
+  }
+
+  function setAniosFijoFromSaved(v) {
+    if (typeof v === 'number') setAniosFijo(v);
+  }
+  function setEuriborFromSaved(v) {
+    if (typeof v === 'number') setEuribor(v);
+  }
+  function setMargenFromSaved(v) {
+    if (typeof v === 'number') setMargen(v);
   }
 
   function setImpuestoCompraPercentFromSaved(v) {
@@ -602,6 +696,9 @@ function DecisionVivienda() {
                   <th style={thStyle}>Entrada (€)</th>
                   <th style={thStyle}>Interés hipoteca (%)</th>
                   <th style={thStyle}>Años hipoteca</th>
+                  <th style={thStyle}>Años fijo</th>
+                  <th style={thStyle}>Euribor (%)</th>
+                  <th style={thStyle}>Margen (%)</th>
                   <th style={thStyle}>Gasto gestor (€)</th>
                   <th style={thStyle}>Gastos de notaría (€)</th>
                   <th style={thStyle}>Alquiler actual (€/mes)</th>
@@ -675,6 +772,33 @@ function DecisionVivienda() {
                       onChange={(e) => setAniosHipoteca(Math.max(1, Number(e.target.value) || 0))}
                       min={1}
                       style={{ ...inputStyle, width: "80px" }}
+                    />
+                  </td>
+                  <td style={tdStyle}>
+                    <input
+                      type="number"
+                      value={añosFijo}
+                      onChange={(e) => setAniosFijo(Math.max(0, Number(e.target.value) || 0))}
+                      min={0}
+                      style={{ ...inputStyle, width: "80px" }}
+                    />
+                  </td>
+                  <td style={tdStyle}>
+                    <input
+                      type="number"
+                      value={euribor}
+                      onChange={(e) => setEuribor(Number(e.target.value) || 0)}
+                      step="0.1"
+                      style={{ ...inputStyle, width: "100px" }}
+                    />
+                  </td>
+                  <td style={tdStyle}>
+                    <input
+                      type="number"
+                      value={margen}
+                      onChange={(e) => setMargen(Number(e.target.value) || 0)}
+                      step="0.1"
+                      style={{ ...inputStyle, width: "100px" }}
                     />
                   </td>
                   <td style={tdStyle}>
@@ -1624,6 +1748,75 @@ function DecisionVivienda() {
         {/* 6. Estimador detallado de alquiler (componente separado) */}
         <section style={{ marginTop: "32px" }}>
           <OpcionAlquiler />
+        </section>
+
+        {/* Botón: evaluar todo con GPT */}
+        <section style={{ marginTop: 20 }}>
+          <EvaluaGPT data={{
+            precioCompra,
+            valorMercadoActual,
+            entrada,
+            interes,
+            añosHipoteca,
+            añosFijo,
+            euribor,
+            margen,
+            gastosNotaria,
+            gestorHipotecario,
+            mejoras,
+            impuestoCompraPercent,
+            impuestosCompra,
+            anioVenta,
+            porcentajeRevalorizacion,
+            alquilerActual,
+            alquilerPosible,
+            ibiBasura,
+            comunidad,
+            importeFinanciado,
+            cuotaMensual,
+            totalInteresesEstimados,
+            interesesPagadosHastaVenta,
+            saldoRestanteHipoteca,
+            plusvaliaBruta,
+            impuestoPlusvaliaVenta,
+            impuestoHipoteticoNoViviendaHabitual,
+            plusvaliaNeta,
+            dineroNetoEnCuenta,
+            inversionEfectivo,
+            roi,
+            alquilerEquilibrio,
+            alquilerPara3Porciento,
+            alquilerPara5Porciento,
+            escenariosPorAño,
+            escenariosConNivel,
+            escenariosGuardados,
+            evolucionPrecio
+          }} />
+        </section>
+        {/* Dashboard compacto: ocultable con botón */}
+        <section style={{ marginTop: 18 }}>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <button
+              onClick={() => setShowDashboard((s) => !s)}
+              style={{
+                padding: '8px 12px',
+                borderRadius: 8,
+                border: '1px solid #d1d5db',
+                background: showDashboard ? '#eef2ff' : '#fff',
+              }}
+            >
+              {showDashboard ? 'Ocultar panel resumen' : 'Mostrar panel resumen'}
+            </button>
+            <div style={{ color: '#6b7280', fontSize: '0.9rem' }}>
+              Muestra un panel compacto con los cálculos clave (sin salir de la página).
+            </div>
+          </div>
+
+          {showDashboard && (
+            <div style={{ marginTop: 12 }}>
+              <ViviendaDashboard />
+            </div>
+          )}
         </section>
       </div>
     </div>
