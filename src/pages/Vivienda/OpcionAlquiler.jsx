@@ -27,22 +27,41 @@ function taxOnCapitalGain(gain) {
   return tax;
 }
 
-export default function OpcionAlquiler() {
-  const [precioCompra, setPrecioCompra] = useState(200000);
-  const [gastosCompra, setGastosCompra] = useState(6000);
-  const [precioVenta, setPrecioVenta] = useState(260000);
-  const [gastosVenta, setGastosVenta] = useState(6000);
-  const [valorConstruccion, setValorConstruccion] = useState(100000);
-  const [anosAlquiler, setAnosAlquiler] = useState(5);
-  const [rentaMensualP1, setRentaMensualP1] = useState(400);
-  const [rentaMensualP2, setRentaMensualP2] = useState(400);
-  const [entrada, setEntrada] = useState(20000);
-  const [añosHipoteca, setAniosHipoteca] = useState(30);
-  const [interesHipoteca, setInteresHipoteca] = useState(2.5);
-  const [ingresoBrutoP1, setIngresoBrutoP1] = useState(18000);
-  const [ingresoBrutoP2, setIngresoBrutoP2] = useState(18000);
-  const [porcPerdidaFiscalAnual, setPorcPerdidaFiscalAnual] = useState(2);
-  const [perdidaExencion, setPerdidaExencion] = useState(0);
+export default function OpcionAlquiler(props = {}) {
+  // accept several optional initial values from parent to avoid repeating inputs
+  const {
+    precioCompra: initPrecioCompra = 200000,
+    gastosCompra: initGastosCompra = 6000,
+    precioVenta: initPrecioVenta = 260000,
+    gastosVenta: initGastosVenta = 6000,
+    valorConstruccion: initValorConstruccion = 100000,
+    anosAlquiler: initAnosAlquiler = 5,
+    rentaMensualP1: initRentaMensualP1 = 400,
+    rentaMensualP2: initRentaMensualP2 = 400,
+    entrada: initEntrada = 20000,
+    añosHipoteca: initAniosHipoteca = 30,
+    interesHipoteca: initInteresHipoteca = 2.5,
+    ingresoBrutoP1: initIngresoBrutoP1 = 18000,
+    ingresoBrutoP2: initIngresoBrutoP2 = 18000,
+    porcPerdidaFiscalAnual: initPorcPerdidaFiscalAnual = 2,
+    perdidaExencion: initPerdidaExencion = 0,
+  } = props;
+
+  const [precioCompra, setPrecioCompra] = useState(initPrecioCompra);
+  const [gastosCompra, setGastosCompra] = useState(initGastosCompra);
+  const [precioVenta, setPrecioVenta] = useState(initPrecioVenta);
+  const [gastosVenta, setGastosVenta] = useState(initGastosVenta);
+  const [valorConstruccion, setValorConstruccion] = useState(initValorConstruccion);
+  const [anosAlquiler, setAnosAlquiler] = useState(initAnosAlquiler);
+  const [rentaMensualP1, setRentaMensualP1] = useState(initRentaMensualP1);
+  const [rentaMensualP2, setRentaMensualP2] = useState(initRentaMensualP2);
+  const [entrada, setEntrada] = useState(initEntrada);
+  const [añosHipoteca, setAniosHipoteca] = useState(initAniosHipoteca);
+  const [interesHipoteca, setInteresHipoteca] = useState(initInteresHipoteca);
+  const [ingresoBrutoP1, setIngresoBrutoP1] = useState(initIngresoBrutoP1);
+  const [ingresoBrutoP2, setIngresoBrutoP2] = useState(initIngresoBrutoP2);
+  const [porcPerdidaFiscalAnual, setPorcPerdidaFiscalAnual] = useState(initPorcPerdidaFiscalAnual);
+  const [perdidaExencion, setPerdidaExencion] = useState(initPerdidaExencion);
 
   const rentaMensualTotal = Number(rentaMensualP1 || 0) + Number(rentaMensualP2 || 0);
 

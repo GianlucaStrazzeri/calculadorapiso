@@ -1,67 +1,40 @@
-// src/pages/DecisionVivienda.jsx
-// Calculadora de decisión vender vs alquilar vivienda
-// - Calcula cuánto dinero te quedaría en la cuenta al vender
-// - Compara con lo que habrías gastado en alquiler
-// - Divide claramente el origen de los gastos: compra, alquiler, impuestos, impuestos hipotéticos
-// - Añade impuestos hipotéticos del 2% si vendes antes de 3 años y deja de ser vivienda habitual
-// - Calcula escenarios por año (muy muy positivo, positivo, neutro, negativo, muy negativo)
-// - Estima qué alquiler debería tener la vivienda para “pagarse sola” y dar rentabilidad
-
-import { useState, useMemo, useEffect } from "react";
-import WebPageGptModal from "../FetchWeb/WebPageGptModal";
-import OpcionAlquiler from "./OpcionAlquiler";
-import EscenariosHipotecas from "./EscenariosHipotecas";
-import EvolucionDelPrecio from "./EvolucionDelPrecio";
-import ReformaCocina from "./ReformaCocina";
-import EvaluaGPT from "./EvaluaGPT";
-import ViviendaDashboard from "./ViviendaDashboard";
+import React, { useState, useEffect, useMemo } from 'react';
+import CreadorDeEscenariosHipotecarios from './CreadorDeEscenariosHipotecarios';
+import EvolucionDelPrecio from './EvolucionDelPrecio';
+import EscenariosHipotecas from './EscenariosHipotecas';
+import ReformaCocina from './ReformaCocina';
+import OpcionAlquiler from './OpcionAlquiler';
+import EvaluaGPT from './EvaluaGPT';
+import ViviendaDashboard from './ViviendaDashboard';
+import WebPageGptModal from '../FetchWeb/WebPageGptModal';
 
 function DecisionVivienda() {
-  const [precioCompra, setPrecioCompra] = useState(145000); // precio al que compras
-  const [valorMercadoActual, setValorMercadoActual] = useState(200000); // valor de mercado hoy
-  const [entrada, setEntrada] = useState(14500);
-  const [interes, setInteres] = useState(2.5); // % anual hipoteca
-  const [gastosNotaria, setGastosNotaria] = useState(700);
 
-  // Alquiler actual (escenario de seguir de alquiler)
-  const [alquilerActual, setAlquilerActual] = useState(850); // €/mes
-
-  // Gastos recurrentes de la vivienda propia
-  const [ibiBasura, setIbiBasura] = useState(400); // €/año
-  const [comunidad, setComunidad] = useState(230); // €/mes
-
-  // Evolución del precio y venta
-  const [porcentajeRevalorizacion, setPorcentajeRevalorizacion] = useState(2); // % anual
-  const [anioVenta, setAnioVenta] = useState(5); // año estimado de venta (1–10)
-
-  // Mejoras realizadas en la vivienda
-  const [mejoras, setMejoras] = useState(0); // €
-
-  // Mostrar/ocultar el dashboard compacto al final
-  const [showDashboard, setShowDashboard] = useState(false);
-
-  // Precio de venta que tú estimas manualmente
-  const [precioVentaManual, setPrecioVentaManual] = useState(0);
-
-  // Mercado del alquiler: cuánto crees que podrías alquilar tu vivienda desde el minuto 1
-  const [alquilerPosible, setAlquilerPosible] = useState(850); // €/mes alquiler de tu piso
-
-  // Tipo de hipoteca y gasto de gestor
-  const [tipoHipoteca, setTipoHipoteca] = useState("fija"); // 'fija' o 'variable'
-  const [gestorHipotecario, setGestorHipotecario] = useState(3000); // gasto deducible en €
-
-  // Hipoteca mixta: años de tipo fijo y estimación de euribor+margen para la parte variable
-  const [añosFijo, setAniosFijo] = useState(5); // años en tipo fijo al inicio
-  const [euribor, setEuribor] = useState(3.5); // euribor estimado anual (%) para la parte variable
-  const [margen, setMargen] = useState(1.5); // margen bancario (%) aplicado sobre euribor
-
-  // Parámetros de hipoteca
-  const importeFinanciado = Math.max(precioCompra - entrada, 0);
+  // --- Estado inicial (valores por defecto razonables) ---
+  const [precioCompra, setPrecioCompra] = useState(130000);
+  const [valorMercadoActual, setValorMercadoActual] = useState(0);
+  const [entrada, setEntrada] = useState(0);
+  const [interes, setInteres] = useState(2.5);
   const [añosHipoteca, setAniosHipoteca] = useState(30);
-  const mesesTotales = añosHipoteca * 12;
+  const [añosFijo, setAniosFijo] = useState(0);
+  const [euribor, setEuribor] = useState(3.0);
+  const [margen, setMargen] = useState(1.0);
+  const [gestorHipotecario, setGestorHipotecario] = useState(0);
+  const [gastosNotaria, setGastosNotaria] = useState(1500);
+  const [alquilerActual, setAlquilerActual] = useState(0);
+  const [ibiBasura, setIbiBasura] = useState(0);
+  const [comunidad, setComunidad] = useState(0);
+  const [porcentajeRevalorizacion, setPorcentajeRevalorizacion] = useState(2);
+  const [anioVenta, setAnioVenta] = useState(5);
+  const [mejoras, setMejoras] = useState(0);
+  const [precioVentaManual, setPrecioVentaManual] = useState(0);
+  const [alquilerPosible, setAlquilerPosible] = useState(0);
+  const [tipoHipoteca, setTipoHipoteca] = useState('variable');
 
-  // monthly rates for fixed and variable portions
-  const fixedMonthlyRate = (Number(interes) || 0) / 100 / 12;
+  // Derived simple values
+  const importeFinanciado = Math.max((Number(precioCompra) || 0) - (Number(entrada) || 0), 0);
+  const mesesTotales = Math.max(Number(añosHipoteca) || 0, 0) * 12;
+  const fixedMonthlyRate = ((Number(interes) || 0) / 100) / 12;
   const variableMonthlyRate = ((Number(euribor) || 0) + (Number(margen) || 0)) / 100 / 12;
 
   // helper: annuity payment
@@ -114,7 +87,27 @@ function DecisionVivienda() {
   }, [importeFinanciado, cuotaInicial, cuotaAfterFixed, fixedMonthlyRate, variableMonthlyRate, mesesTotales, añosFijo]);
 
   // Gastos anuales fijos de la vivienda (solo IBI+basura + comunidad)
-  const gastosAnualesVivienda = ibiBasura + comunidad * 12;
+  const gastosAnualesVivienda = (Number(ibiBasura) || 0) + (Number(comunidad) || 0) * 12;
+
+  // Modal / UI visibility flags
+  const [showCreator, setShowCreator] = useState(false);
+  const [showAlicanteChart, setShowAlicanteChart] = useState(false);
+  const [showEvolucionVentaModal, setShowEvolucionVentaModal] = useState(false);
+  const [showDashboardEconomico, setShowDashboardEconomico] = useState(false);
+  const [showAlquilarModal, setShowAlquilarModal] = useState(false);
+  const [showROIModal, setShowROIModal] = useState(false);
+  const [showDashboard, setShowDashboard] = useState(false);
+  const [showReforma, setShowReforma] = useState(false);
+  const [showAlicanteInfo, setShowAlicanteInfo] = useState(false);
+
+  // Section hide toggles — start hidden so the page shows only header buttons
+  const [hideDatosTabla, setHideDatosTabla] = useState(true);
+  const [hideSection1, setHideSection1] = useState(true);
+  const [hideSection2, setHideSection2] = useState(true);
+  const [hideSection3, setHideSection3] = useState(true);
+  const [hideSection4, setHideSection4] = useState(true);
+  const [hideSection5, setHideSection5] = useState(true);
+  const [showAlquilerMercadoModal, setShowAlquilerMercadoModal] = useState(false);
 
   // Evolución del precio de la vivienda según revalorización anual,
   // usando como base el valor de mercado que tú estimes (no el precio de compra)
@@ -607,6 +600,48 @@ function DecisionVivienda() {
     }
   }
 
+  // Recolectar datos en un objeto antes del JSX para evitar problemas de parseo
+  const evaluaData = {
+    precioCompra,
+    valorMercadoActual,
+    entrada,
+    interes,
+    añosHipoteca,
+    añosFijo,
+    euribor,
+    margen,
+    gastosNotaria,
+    gestorHipotecario,
+    mejoras,
+    impuestoCompraPercent,
+    impuestosCompra,
+    anioVenta,
+    porcentajeRevalorizacion,
+    alquilerActual,
+    alquilerPosible,
+    ibiBasura,
+    comunidad,
+    importeFinanciado,
+    cuotaMensual,
+    totalInteresesEstimados,
+    interesesPagadosHastaVenta,
+    saldoRestanteHipoteca,
+    plusvaliaBruta,
+    impuestoPlusvaliaVenta,
+    impuestoHipoteticoNoViviendaHabitual,
+    plusvaliaNeta,
+    dineroNetoEnCuenta,
+    inversionEfectivo,
+    roi,
+    alquilerEquilibrio,
+    alquilerPara3Porciento,
+    alquilerPara5Porciento,
+    escenariosPorAño,
+    escenariosConNivel,
+    escenariosGuardados,
+    evolucionPrecio,
+  };
+
   return (
     <div
       style={{
@@ -656,7 +691,247 @@ function DecisionVivienda() {
           </p>
         </header>
 
+        {/* Botón para abrir el creador de escenarios hipotecarios */}
+        <div style={{ marginBottom: 18, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+          <button
+            onClick={() => setShowCreator((s) => !s)}
+            style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid #2563eb', background: showCreator ? '#eef6ff' : '#fff' }}
+          >
+            {showCreator ? 'Cerrar creación de escenario' : 'Crea escenario hipotecario'}
+          </button>
+
+          <button
+            onClick={() => setShowAlicanteChart(true)}
+            style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid #d1d5db', background: '#fff' }}
+          >
+            Gráfico precios vivienda en Alicante
+          </button>
+
+          <button
+            onClick={() => setShowDashboardEconomico(true)}
+            style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid #d1d5db', background: '#fff' }}
+          >
+            dashboard economico
+          </button>
+
+          <button
+            onClick={() => setShowAlquilarModal(true)}
+            style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid #d1d5db', background: '#fff' }}
+          >
+            Alquilar o vender?
+          </button>
+
+          <button
+            onClick={() => setShowAlquilerMercadoModal(true)}
+            style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid #d1d5db', background: '#fff' }}
+          >
+            Mercado alquiler
+          </button>
+
+          {/* Moved: WebPage GPT modal (botón que abre el asistente web) */}
+          <div style={{ display: 'inline-flex', alignItems: 'center' }}>
+            <WebPageGptModal />
+          </div>
+
+          <button
+            onClick={() => setShowROIModal(true)}
+            style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid #d1d5db', background: '#fff' }}
+          >
+            Return of Investment
+          </button>
+
+          <button
+            onClick={() => setShowReforma((s) => !s)}
+            style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid #d1d5db', background: showReforma ? '#eef6ff' : '#fff' }}
+          >
+            Reforma – Análisis de costes y rentabilidad
+          </button>
+        </div>
+
+        {showCreator && (
+          <div style={{ marginBottom: 18 }}>
+            <CreadorDeEscenariosHipotecarios
+              onCreate={(payload) => {
+                try {
+                  const prev = Array.isArray(escenariosGuardados) ? escenariosGuardados : [];
+                  const next = [payload, ...prev].slice(0, 50);
+                  setEscenariosGuardados(next);
+                  localStorage.setItem(SCENARIOS_KEY, JSON.stringify(next));
+                } catch (e) {
+                  console.warn('No se pudo guardar escenario desde creador', e);
+                }
+                setShowCreator(false);
+              }}
+              onClose={() => setShowCreator(false)}
+            />
+          </div>
+        )}
+
+        {showAlicanteChart && (
+          <div
+            onClick={(e) => { if (e.target === e.currentTarget) setShowAlicanteChart(false); }}
+            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1300 }}
+          >
+            <div style={{ width: 'min(980px, 96%)', maxHeight: '90vh', overflow: 'auto', background: '#fff', borderRadius: 12, padding: 18 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h3 style={{ margin: 0 }}>Gráfico precios vivienda en Alicante</h3>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <button onClick={() => setShowAlicanteInfo((s) => !s)} style={{ padding: '6px 8px', borderRadius: 8 }}>?</button>
+                  <button onClick={() => setShowEvolucionVentaModal(true)} style={{ padding: '6px 8px', borderRadius: 8 }}>Abrir evolución venta</button>
+                  <button onClick={() => setShowAlicanteChart(false)} style={{ padding: '6px 8px', borderRadius: 8 }}>Cerrar</button>
+                </div>
+              </div>
+
+              <div style={{ marginTop: 12 }}>
+                <EvolucionDelPrecio />
+              </div>
+
+              {showAlicanteInfo && (
+                <div style={{ marginTop: 12, padding: 12, border: '1px solid #e5e7eb', borderRadius: 8, background: '#f9fafb' }}>
+                  <strong>Información:</strong>
+                  <div style={{ marginTop: 6, color: '#374151' }}>
+                    Este gráfico muestra una estimación ilustrativa de la evolución del precio según presets. No es una predicción financiera.
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+      {showEvolucionVentaModal && (
+        <div
+          onClick={(e) => { if (e.target === e.currentTarget) setShowEvolucionVentaModal(false); }}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1400 }}
+        >
+          <div style={{ width: 'min(900px, 96%)', maxHeight: '90vh', overflow: 'auto', background: '#fff', borderRadius: 12, padding: 18 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 style={{ margin: 0 }}>Evolución del posible precio de venta</h3>
+              <div>
+                <button onClick={() => setShowEvolucionVentaModal(false)} style={{ padding: '6px 8px', borderRadius: 8 }}>Cerrar</button>
+              </div>
+            </div>
+
+            <div style={{ marginTop: 12 }}>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  marginBottom: '10px',
+                  flexWrap: 'wrap',
+                }}
+              >
+                <span style={{ fontSize: '0.9rem', color: '#374151' }}>
+                  Revalorización anual:
+                </span>
+
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                  <button
+                    onClick={() => setPorcentajeRevalorizacion(2)}
+                    style={{
+                      padding: '6px 10px',
+                      borderRadius: 8,
+                      border: porcentajeRevalorizacion === 2 ? '2px solid #2563eb' : '1px solid #d1d5db',
+                      background: porcentajeRevalorizacion === 2 ? '#eff6ff' : '#fff',
+                    }}
+                  >
+                    Pesimista (2%)
+                  </button>
+                  <button
+                    onClick={() => setPorcentajeRevalorizacion(4)}
+                    style={{
+                      padding: '6px 10px',
+                      borderRadius: 8,
+                      border: porcentajeRevalorizacion === 4 ? '2px solid #2563eb' : '1px solid #d1d5db',
+                      background: porcentajeRevalorizacion === 4 ? '#eff6ff' : '#fff',
+                    }}
+                  >
+                    Base (4%)
+                  </button>
+                  <button
+                    onClick={() => setPorcentajeRevalorizacion(6)}
+                    style={{
+                      padding: '6px 10px',
+                      borderRadius: 8,
+                      border: porcentajeRevalorizacion === 6 ? '2px solid #2563eb' : '1px solid #d1d5db',
+                      background: porcentajeRevalorizacion === 6 ? '#eff6ff' : '#fff',
+                    }}
+                  >
+                    Positivo (6%)
+                  </button>
+
+                  <div style={{ fontWeight: 700, marginLeft: 8 }}>{porcentajeRevalorizacion}%</div>
+                </div>
+
+                <select
+                  value={porcentajeRevalorizacion}
+                  onChange={(e) => setPorcentajeRevalorizacion(Number(e.target.value))}
+                  style={{
+                    padding: '6px 10px',
+                    borderRadius: '999px',
+                    border: '1px solid #d1d5db',
+                    fontSize: '0.9rem',
+                  }}
+                >
+                  <option value={0}>0% (precio se mantiene)</option>
+                  <option value={2}>+2% anual</option>
+                  <option value={4}>+4% anual</option>
+                  <option value={6}>+6% anual</option>
+                </select>
+              </div>
+
+              <div
+                style={{
+                  overflowX: 'auto',
+                  borderRadius: '14px',
+                  border: '1px solid #e5e7eb',
+                }}
+              >
+                <table
+                  style={{
+                    width: '100%',
+                    borderCollapse: 'collapse',
+                    minWidth: '400px',
+                  }}
+                >
+                  <thead>
+                    <tr
+                      style={{
+                        backgroundColor: '#f9fafb',
+                        textAlign: 'left',
+                      }}
+                    >
+                      <th style={thStyle}>Año</th>
+                      <th style={thStyle}>Precio estimado (€)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {evolucionPrecio.map((fila) => (
+                      <tr key={fila.año}>
+                        <td style={tdStyle}>
+                          {fila.año === 0
+                            ? 'Año 0 (valor actual de mercado)'
+                            : `Año ${fila.año}`}
+                        </td>
+                        <td style={tdStyle}>
+                          {fila.precio.toLocaleString('es-ES', {
+                            style: 'currency',
+                            currency: 'EUR',
+                            maximumFractionDigits: 0,
+                          })}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
         {/* 1. Datos de compra, hipoteca y gastos */}
+        { !hideSection1 && (
         <section>
           <h2
             style={{
@@ -668,13 +943,14 @@ function DecisionVivienda() {
             1. Datos de compra, hipoteca y gastos
           </h2>
 
-          <div
-            style={{
-              overflowX: "auto",
-              borderRadius: "14px",
-              border: "1px solid #e5e7eb",
-            }}
-          >
+          { !hideDatosTabla && (
+            <div
+              style={{
+                overflowX: "auto",
+                borderRadius: "14px",
+                border: "1px solid #e5e7eb",
+              }}
+            >
             <table
               style={{
                 width: "100%",
@@ -706,154 +982,157 @@ function DecisionVivienda() {
                   <th style={thStyle}>Comunidad (€/mes)</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr>
-                  <td style={tdStyle}>
-                    <input
-                      type="number"
-                      value={precioCompra}
-                      onChange={(e) =>
-                        setPrecioCompra(Number(e.target.value))
-                      }
-                      min={0}
-                      style={inputStyle}
-                    />
-                  </td>
-                  <td style={tdStyle}>
-                    <label style={{ fontSize: '0.85rem' }}>
-                      Imp. compra (%)
-                      <select value={impuestoCompraPercent} onChange={(e) => setImpuestoCompraPercent(Number(e.target.value))} style={{ ...inputStyle, marginTop: 6 }}>
-                        <option value={0}>0%</option>
-                        <option value={6}>6%</option>
-                        <option value={8}>8%</option>
-                        <option value={10}>10%</option>
-                      </select>
-                    </label>
-                  </td>
-                  <td style={tdStyle}>
-                    <div style={{ fontSize: '0.95rem', paddingTop: 8 }}>
-                      <strong>{impuestosCompra.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</strong>
-                    </div>
-                  </td>
-                  <td style={tdStyle}>
-                    <input
-                      type="number"
-                      value={valorMercadoActual}
-                      onChange={(e) =>
-                        setValorMercadoActual(Number(e.target.value))
-                      }
-                      min={0}
-                      style={inputStyle}
-                    />
-                  </td>
-                  <td style={tdStyle}>
-                    <input
-                      type="number"
-                      value={entrada}
-                      onChange={(e) => setEntrada(Number(e.target.value))}
-                      min={0}
-                      style={inputStyle}
-                    />
-                  </td>
-                  <td style={tdStyle}>
-                    <input
-                      type="number"
-                      value={interes}
-                      onChange={(e) => setInteres(Number(e.target.value))}
-                      step="0.1"
-                      min={0}
-                      style={inputStyle}
-                    />
-                  </td>
-                  <td style={tdStyle}>
-                    <input
-                      type="number"
-                      value={añosHipoteca}
-                      onChange={(e) => setAniosHipoteca(Math.max(1, Number(e.target.value) || 0))}
-                      min={1}
-                      style={{ ...inputStyle, width: "80px" }}
-                    />
-                  </td>
-                  <td style={tdStyle}>
-                    <input
-                      type="number"
-                      value={añosFijo}
-                      onChange={(e) => setAniosFijo(Math.max(0, Number(e.target.value) || 0))}
-                      min={0}
-                      style={{ ...inputStyle, width: "80px" }}
-                    />
-                  </td>
-                  <td style={tdStyle}>
-                    <input
-                      type="number"
-                      value={euribor}
-                      onChange={(e) => setEuribor(Number(e.target.value) || 0)}
-                      step="0.1"
-                      style={{ ...inputStyle, width: "100px" }}
-                    />
-                  </td>
-                  <td style={tdStyle}>
-                    <input
-                      type="number"
-                      value={margen}
-                      onChange={(e) => setMargen(Number(e.target.value) || 0)}
-                      step="0.1"
-                      style={{ ...inputStyle, width: "100px" }}
-                    />
-                  </td>
-                  <td style={tdStyle}>
-                    <input
-                      type="number"
-                      value={gestorHipotecario}
-                      onChange={(e) => setGestorHipotecario(Number(e.target.value) || 0)}
-                      min={0}
-                      style={{ ...inputStyle, width: "120px" }}
-                    />
-                  </td>
-                  <td style={tdStyle}>
-                    <input
-                      type="number"
-                      value={gastosNotaria}
-                      onChange={(e) =>
-                        setGastosNotaria(Number(e.target.value))
-                      }
-                      min={0}
-                      style={inputStyle}
-                    />
-                  </td>
-                  <td style={tdStyle}>
-                    <input
-                      type="number"
-                      value={alquilerActual}
-                      onChange={(e) =>
-                        setAlquilerActual(Number(e.target.value))
-                      }
-                      min={0}
-                      style={inputStyle}
-                    />
-                  </td>
-                  <td style={tdStyle}>
-                    <input
-                      type="number"
-                      value={ibiBasura}
-                      onChange={(e) => setIbiBasura(Number(e.target.value))}
-                      min={0}
-                      style={inputStyle}
-                    />
-                  </td>
-                  <td style={tdStyle}>
-                    <input
-                      type="number"
-                      value={comunidad}
-                      onChange={(e) => setComunidad(Number(e.target.value))}
-                      min={0}
-                      style={inputStyle}
-                    />
-                  </td>
-                </tr>
-              </tbody>
+              {!hideDatosTabla && (
+                <tbody>
+                  <tr>
+                    <td style={tdStyle}>
+                      <input
+                        type="number"
+                        value={precioCompra}
+                        onChange={(e) =>
+                          setPrecioCompra(Number(e.target.value))
+                        }
+                        min={0}
+                        style={inputStyle}
+                      />
+                    </td>
+                    <td style={tdStyle}>
+                      <label style={{ fontSize: '0.85rem' }}>
+                        Imp. compra (%)
+                        <select value={impuestoCompraPercent} onChange={(e) => setImpuestoCompraPercent(Number(e.target.value))} style={{ ...inputStyle, marginTop: 6 }}>
+                          <option value={0}>0%</option>
+                          <option value={6}>6%</option>
+                          <option value={8}>8%</option>
+                          <option value={10}>10%</option>
+                        </select>
+                      </label>
+                    </td>
+                    <td style={tdStyle}>
+                      <div style={{ fontSize: '0.95rem', paddingTop: 8 }}>
+                        <strong>{impuestosCompra.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</strong>
+                      </div>
+                    </td>
+                    <td style={tdStyle}>
+                      <input
+                        type="number"
+                        value={valorMercadoActual}
+                        onChange={(e) =>
+                          setValorMercadoActual(Number(e.target.value))
+                        }
+                        min={0}
+                        style={inputStyle}
+                      />
+                    </td>
+                    <td style={tdStyle}>
+                      <input
+                        type="number"
+                        value={entrada}
+                        onChange={(e) => setEntrada(Number(e.target.value))}
+                        min={0}
+                        style={inputStyle}
+                      />
+                    </td>
+                    <td style={tdStyle}>
+                      <input
+                        type="number"
+                        value={interes}
+                        onChange={(e) => setInteres(Number(e.target.value))}
+                        step="0.1"
+                        min={0}
+                        style={inputStyle}
+                      />
+                    </td>
+                    <td style={tdStyle}>
+                      <input
+                        type="number"
+                        value={añosHipoteca}
+                        onChange={(e) => setAniosHipoteca(Math.max(1, Number(e.target.value) || 0))}
+                        min={1}
+                        style={{ ...inputStyle, width: "80px" }}
+                      />
+                    </td>
+                    <td style={tdStyle}>
+                      <input
+                        type="number"
+                        value={añosFijo}
+                        onChange={(e) => setAniosFijo(Math.max(0, Number(e.target.value) || 0))}
+                        min={0}
+                        style={{ ...inputStyle, width: "80px" }}
+                      />
+                    </td>
+                    <td style={tdStyle}>
+                      <input
+                        type="number"
+                        value={euribor}
+                        onChange={(e) => setEuribor(Number(e.target.value) || 0)}
+                        step="0.1"
+                        style={{ ...inputStyle, width: "100px" }}
+                      />
+                    </td>
+                    <td style={tdStyle}>
+                      <input
+                        type="number"
+                        value={margen}
+                        onChange={(e) => setMargen(Number(e.target.value) || 0)}
+                        step="0.1"
+                        style={{ ...inputStyle, width: "100px" }}
+                      />
+                    </td>
+                    <td style={tdStyle}>
+                      <input
+                        type="number"
+                        value={gestorHipotecario}
+                        onChange={(e) => setGestorHipotecario(Number(e.target.value) || 0)}
+                        min={0}
+                        style={{ ...inputStyle, width: "120px" }}
+                      />
+                    </td>
+                    <td style={tdStyle}>
+                      <input
+                        type="number"
+                        value={gastosNotaria}
+                        onChange={(e) =>
+                          setGastosNotaria(Number(e.target.value))
+                        }
+                        min={0}
+                        style={inputStyle}
+                      />
+                    </td>
+                    <td style={tdStyle}>
+                      <input
+                        type="number"
+                        value={alquilerActual}
+                        onChange={(e) =>
+                          setAlquilerActual(Number(e.target.value))
+                        }
+                        min={0}
+                        style={inputStyle}
+                      />
+                    </td>
+                    <td style={tdStyle}>
+                      <input
+                        type="number"
+                        value={ibiBasura}
+                        onChange={(e) => setIbiBasura(Number(e.target.value))}
+                        min={0}
+                        style={inputStyle}
+                      />
+                    </td>
+                    <td style={tdStyle}>
+                      <input
+                        type="number"
+                        value={comunidad}
+                        onChange={(e) => setComunidad(Number(e.target.value))}
+                        min={0}
+                        style={inputStyle}
+                      />
+                    </td>
+                  </tr>
+                </tbody>
+              )}
             </table>
-          </div>
+            </div>
+          )}
 
           {/* Escenarios hipotecarios (cards) - aparecen cuando haya escenarios guardados */}
           <EscenariosHipotecas
@@ -875,8 +1154,7 @@ function DecisionVivienda() {
             <button onClick={saveScenario} style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid #d1d5db", background: "#f3f4f6" }}>
               Guardar escenario
             </button>
-            {/* Integración: botón/modal para FetchWeb GPT */}
-            <WebPageGptModal />
+            {/* Integración: botón/modal para FetchWeb GPT (movido arriba) */}
 
             {escenariosGuardados.length > 0 && (
               <div style={{ marginTop: 6, width: "100%" }}>
@@ -897,16 +1175,28 @@ function DecisionVivienda() {
             )}
           </div>
         </section>
+        )}
 
-        {/* Visual: evolución del precio (ilustrativo) */}
-        <section style={{ marginTop: "18px" }}>
-          <EvolucionDelPrecio />
-        </section>
+        {/* Reforma: ahora mostrada como modal overlay */}
+        {showReforma && (
+          <div
+            onClick={(e) => { if (e.target === e.currentTarget) setShowReforma(false); }}
+            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1500 }}
+          >
+            <div style={{ width: 'min(920px, 96%)', maxHeight: '90vh', overflow: 'auto', background: '#fff', borderRadius: 12, padding: 18 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h3 style={{ margin: 0 }}>Reforma — Análisis de costes y rentabilidad</h3>
+                <div>
+                  <button onClick={() => setShowReforma(false)} style={{ padding: '6px 8px', borderRadius: 8 }}>Cerrar</button>
+                </div>
+              </div>
 
-        {/* Insertar: componente Reforma de cocina (antes del punto 3) */}
-        <section style={{ marginTop: "18px" }}>
-          <ReformaCocina />
-        </section>
+              <div style={{ marginTop: 12 }}>
+                <ReformaCocina />
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Resumen rápido de hipoteca, alquiler y gastos */}
         <section
@@ -983,6 +1273,7 @@ function DecisionVivienda() {
         </section>
 
         {/* 2. Evolución del posible precio de venta (sobre valor de mercado) */}
+        { !hideSection2 && (
         <section style={{ marginTop: "32px" }}>
           <h2
             style={{
@@ -1118,8 +1409,10 @@ function DecisionVivienda() {
             </table>
           </div>
         </section>
+        )}
 
         {/* 3. Escenario de venta, dinero neto y origen de los gastos */}
+        { !hideSection3 && (
         <section style={{ marginTop: "32px" }}>
           <h2
             style={{
@@ -1448,8 +1741,10 @@ function DecisionVivienda() {
             </div>
           </div>
         </section>
+        )}
 
         {/* 4. Gráfico: ¿cuándo empieza a salirte rentable? */}
+        { !hideSection4 && (
         <section style={{ marginTop: "32px" }}>
           <h2
             style={{
@@ -1617,8 +1912,337 @@ function DecisionVivienda() {
             )}
           </p>
         </section>
+        )}
+
+        {showROIModal && (
+        <div
+          onClick={(e) => { if (e.target === e.currentTarget) setShowROIModal(false); }}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1400 }}
+        >
+          <div style={{ width: 'min(920px, 96%)', maxHeight: '90vh', overflow: 'auto', background: '#fff', borderRadius: 12, padding: 18 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 style={{ margin: 0 }}>Return of Investment</h3>
+              <div>
+                <button onClick={() => setShowROIModal(false)} style={{ padding: '6px 8px', borderRadius: 8 }}>Cerrar</button>
+              </div>
+            </div>
+
+            <div style={{ marginTop: 12 }}>
+              <p style={{ fontSize: '0.9rem', color: '#6b7280', marginBottom: '10px' }}>
+                El gráfico clasifica cada año según el ROI estimado: <strong>muy muy positivo</strong>, <strong>positivo</strong>, <strong>neutro</strong>, <strong>negativo</strong> o <strong>muy negativo</strong>. Usa sólo la estimación de revalorización (no el precio manual) para ver la tendencia.
+              </p>
+
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginBottom: '12px', fontSize: '0.8rem', color: '#4b5563' }}>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                  <button onClick={() => setEditarLabels(!editarLabels)} style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid #d1d5db', background: '#fff' }}>
+                    {editarLabels ? 'Cancelar edición' : 'Editar etiquetas'}
+                  </button>
+                  {editarLabels ? (
+                    <>
+                      {scenarioLabels.map((lab, idx) => (
+                        <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <span style={{ width: 12, height: 12, borderRadius: 999, backgroundColor: colorPorNivel(lab) }} />
+                          <input value={lab} onChange={(e)=>{ const next = [...scenarioLabels]; next[idx]=e.target.value; setScenarioLabels(next); }} style={{ ...inputStyle, width: 160 }} />
+                        </div>
+                      ))}
+                      <button onClick={saveLabelsToStorage} style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid #d1d5db', background: '#ecfccb' }}>Guardar etiquetas</button>
+                    </>
+                  ) : (
+                    scenarioLabels.map((nivel, i) => (
+                      <div key={nivel} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ width: '12px', height: '12px', borderRadius: '999px', backgroundColor: colorPorNivel(nivel) }} />
+                        <span>{nivel}</span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              <div style={{ borderRadius: '14px', border: '1px solid #e5e7eb', padding: '14px 16px', background: '#f9fafb', overflowX: 'auto' }}>
+                <div style={{ minWidth: '600px', display: 'flex', alignItems: 'flex-end', gap: '12px', height: '180px' }}>
+                  {escenariosConNivel.map((esc) => {
+                    const altura = (Math.min(Math.abs(esc.roi), maxAbsRoi) / maxAbsRoi) * 120;
+                    return (
+                      <div key={esc.año} style={{ flex: '1 0 0', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', gap: '4px' }}>
+                        <div style={{ width: '100%', maxWidth: '40px', height: `${altura}px`, borderRadius: '999px', backgroundColor: colorPorNivel(esc.nivel), display: 'flex', alignItems: 'flex-end', justifyContent: 'center', transition: 'height 0.3s ease' }} title={`Año ${esc.año} · ROI: ${isFinite(esc.roi) ? esc.roi.toFixed(1) : '-'}% · ${esc.nivel}`}>
+                          <span style={{ fontSize: '0.7rem', color: '#ffffff', marginBottom: '4px' }}>{isFinite(esc.roi) ? esc.roi.toFixed(0) + '%' : '-'}</span>
+                        </div>
+                        <span style={{ fontSize: '0.75rem', color: '#374151', textAlign: 'center' }}>Año {esc.año}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <p style={{ marginTop: '10px', fontSize: '0.85rem', color: '#4b5563' }}>
+                {primerAñoPositivo ? (
+                  <>
+                    Con tus números actuales, la operación pasa a ser al menos <strong>neutra/positiva</strong> a partir del <strong>año {primerAñoPositivo}</strong>.
+                  </>
+                ) : (
+                  <>
+                    Con tus números actuales, la rentabilidad no llega a ser positiva dentro de los primeros {añosSimulacion} años.
+                  </>
+                )}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showDashboardEconomico && (
+        <div
+          onClick={(e) => { if (e.target === e.currentTarget) setShowDashboardEconomico(false); }}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1400 }}
+        >
+          <div style={{ width: 'min(980px, 96%)', maxHeight: '90vh', overflow: 'auto', background: '#fff', borderRadius: 12, padding: 18 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 style={{ margin: 0 }}>Dashboard económico</h3>
+              <div>
+                <button onClick={() => setShowDashboardEconomico(false)} style={{ padding: '6px 8px', borderRadius: 8 }}>Cerrar</button>
+              </div>
+            </div>
+
+            <div style={{ marginTop: 12 }}>
+              {/* Sección 1 (Datos de compra, hipoteca y gastos) */}
+              <section>
+                <h2 style={{ fontSize: '1.1rem', marginBottom: '12px', color: '#111827' }}>1. Datos de compra, hipoteca y gastos</h2>
+
+                  <div style={{ overflowX: 'auto', borderRadius: '14px', border: '1px solid #e5e7eb' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '900px' }}>
+                      <thead>
+                        <tr style={{ backgroundColor: '#f9fafb', textAlign: 'left' }}>
+                          <th style={thStyle}>Precio de compra (€)</th>
+                          <th style={thStyle}>Imp. compra (%)</th>
+                          <th style={thStyle}>Imp. compra (€)</th>
+                          <th style={thStyle}>Valor mercado actual (€)</th>
+                          <th style={thStyle}>Entrada (€)</th>
+                          <th style={thStyle}>Interés hipoteca (%)</th>
+                          <th style={thStyle}>Años hipoteca</th>
+                          <th style={thStyle}>Años fijo</th>
+                          <th style={thStyle}>Euribor (%)</th>
+                          <th style={thStyle}>Margen (%)</th>
+                          <th style={thStyle}>Gasto gestor (€)</th>
+                          <th style={thStyle}>Gastos de notaría (€)</th>
+                          <th style={thStyle}>Alquiler actual (€/mes)</th>
+                          <th style={thStyle}>IBI + basura (€/año)</th>
+                          <th style={thStyle}>Comunidad (€/mes)</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                          <tr>
+                            <td style={tdStyle}>
+                              <input type="number" value={precioCompra} onChange={(e)=>setPrecioCompra(Number(e.target.value))} min={0} style={inputStyle} />
+                            </td>
+                            <td style={tdStyle}>
+                              <label style={{ fontSize: '0.85rem' }}>
+                                Imp. compra (%)
+                                <select value={impuestoCompraPercent} onChange={(e) => setImpuestoCompraPercent(Number(e.target.value))} style={{ ...inputStyle, marginTop: 6 }}>
+                                  <option value={0}>0%</option>
+                                  <option value={6}>6%</option>
+                                  <option value={8}>8%</option>
+                                  <option value={10}>10%</option>
+                                </select>
+                              </label>
+                            </td>
+                            <td style={tdStyle}>
+                              <div style={{ fontSize: '0.95rem', paddingTop: 8 }}>
+                                <strong>{impuestosCompra.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</strong>
+                              </div>
+                            </td>
+                            <td style={tdStyle}>
+                              <input type="number" value={valorMercadoActual} onChange={(e)=>setValorMercadoActual(Number(e.target.value))} min={0} style={inputStyle} />
+                            </td>
+                            <td style={tdStyle}>
+                              <input type="number" value={entrada} onChange={(e)=>setEntrada(Number(e.target.value))} min={0} style={inputStyle} />
+                            </td>
+                            <td style={tdStyle}>
+                              <input type="number" value={interes} onChange={(e)=>setInteres(Number(e.target.value))} step="0.1" min={0} style={inputStyle} />
+                            </td>
+                            <td style={tdStyle}>
+                              <input type="number" value={añosHipoteca} onChange={(e)=>setAniosHipoteca(Math.max(1, Number(e.target.value) || 0))} min={1} style={{ ...inputStyle, width: '80px' }} />
+                            </td>
+                            <td style={tdStyle}>
+                              <input type="number" value={añosFijo} onChange={(e)=>setAniosFijo(Math.max(0, Number(e.target.value) || 0))} min={0} style={{ ...inputStyle, width: '80px' }} />
+                            </td>
+                            <td style={tdStyle}>
+                              <input type="number" value={euribor} onChange={(e)=>setEuribor(Number(e.target.value) || 0)} step="0.1" style={{ ...inputStyle, width: '100px' }} />
+                            </td>
+                            <td style={tdStyle}>
+                              <input type="number" value={margen} onChange={(e)=>setMargen(Number(e.target.value) || 0)} step="0.1" style={{ ...inputStyle, width: '100px' }} />
+                            </td>
+                            <td style={tdStyle}>
+                              <input type="number" value={gestorHipotecario} onChange={(e)=>setGestorHipotecario(Number(e.target.value) || 0)} min={0} style={{ ...inputStyle, width: '120px' }} />
+                            </td>
+                            <td style={tdStyle}>
+                              <input type="number" value={gastosNotaria} onChange={(e)=>setGastosNotaria(Number(e.target.value))} min={0} style={inputStyle} />
+                            </td>
+                            <td style={tdStyle}>
+                              <input type="number" value={alquilerActual} onChange={(e)=>setAlquilerActual(Number(e.target.value))} min={0} style={inputStyle} />
+                            </td>
+                            <td style={tdStyle}>
+                              <input type="number" value={ibiBasura} onChange={(e)=>setIbiBasura(Number(e.target.value))} min={0} style={inputStyle} />
+                            </td>
+                            <td style={tdStyle}>
+                              <input type="number" value={comunidad} onChange={(e)=>setComunidad(Number(e.target.value))} min={0} style={inputStyle} />
+                            </td>
+                          </tr>
+                        </tbody>
+                    </table>
+                  </div>
+
+                <EscenariosHipotecas scenarios={escenariosGuardados} onLoad={loadScenario} onDelete={deleteScenario} onUpdateName={updateScenarioName} />
+
+                <div style={{ marginTop: 12, display: 'flex', gap: 8, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+                  <input type="text" placeholder="Nombre del escenario (opcional)" value={scenarioName} onChange={(e)=>setScenarioName(e.target.value)} style={{ ...inputStyle, width: 260 }} />
+                  <button onClick={saveScenario} style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid #d1d5db', background: '#f3f4f6' }}>Guardar escenario</button>
+                </div>
+              </section>
+
+              {/* Sección 3 (Venta, dinero neto...) */}
+              <section style={{ marginTop: '18px' }}>
+                <h2 style={{ fontSize: '1.1rem', marginBottom: '8px', color: '#111827' }}>3. Venta, dinero neto que te quedaría, ROI y origen de los gastos</h2>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px', marginBottom: '16px' }}>
+                  <div style={cardMini}>
+                    <span style={labelMini}>Año estimado de venta</span>
+                    <select value={anioVenta} onChange={(e)=>setAnioVenta(Number(e.target.value))} style={{ marginTop: '4px', padding: '6px 10px', borderRadius: '10px', border: '1px solid #d1d5db', fontSize: '0.9rem' }}>
+                      {Array.from({ length: añosSimulacion }, (_, i) => i+1).map(a => <option key={a} value={a}>Año {a}</option>)}
+                    </select>
+                    <span style={{ fontSize: '0.8rem', color: '#9ca3af' }}>Antes de 3 años → impuestos compra 10% · Desde año 3 → 8%</span>
+                  </div>
+
+                  <div style={cardMini}>
+                    <span style={labelMini}>Mejoras realizadas en la vivienda</span>
+                    <input type="number" value={mejoras} onChange={(e)=>setMejoras(Number(e.target.value))} min={0} style={{ ...inputStyle, marginTop: '4px' }} />
+                    <span style={{ fontSize: '0.8rem', color: '#9ca3af' }}>Reformas, mejoras, etc.</span>
+                  </div>
+
+                  <div style={cardMini}>
+                    <span style={labelMini}>Precio de venta que TÚ estimas (opcional)</span>
+                    <input type="number" value={precioVentaManual} onChange={(e)=>setPrecioVentaManual(Number(e.target.value))} min={0} style={{ ...inputStyle, marginTop: '4px' }} />
+                    <span style={{ fontSize: '0.8rem', color: '#9ca3af' }}>Si lo dejas en 0, se usa la estimación por revalorización.</span>
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px' }}>
+                  <div style={cardMini}>
+                    <span style={labelMini}>Precio usado en el cálculo</span>
+                    <strong style={valueMini}>{precioVentaUsado.toLocaleString('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 })}</strong>
+                    <span style={{ fontSize: '0.8rem', color: '#9ca3af' }}>{precioVentaManual>0 ? 'Usando tu precio manual.' : 'Usando el precio estimado sobre valor de mercado.'}</span>
+                  </div>
+
+                  <div style={cardMini}><span style={labelMini}>Impuestos de compra ({impuestoCompraPercent}%)</span><strong style={valueMini}>{impuestosCompra.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</strong><span style={{ fontSize: '0.8rem', color: '#9ca3af' }}><strong>Origen:</strong> gasto de compra de vivienda.</span></div>
+
+                  <div style={cardMini}><span style={labelMini}>Intereses pagados hasta el año {anioVenta}</span><strong style={valueMini}>{interesesPagadosHastaVenta.toLocaleString('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits:0 })}</strong><span style={{ fontSize: '0.8rem', color: '#9ca3af' }}><strong>Origen:</strong> coste financiero de la hipoteca. Meses pagados: {mesesHastaVenta}</span></div>
+
+                  <div style={cardMini}><span style={labelMini}>Hipoteca pendiente al vender</span><strong style={valueMini}>{saldoRestanteHipoteca.toLocaleString('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits:0 })}</strong><span style={{ fontSize: '0.8rem', color: '#9ca3af' }}><strong>Origen:</strong> capital pendiente de amortizar.</span></div>
+
+                  <div style={cardMini}><span style={labelMini}>Mejoras descontadas</span><strong style={valueMini}>{mejoras.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</strong><span style={{ fontSize: '0.8rem', color: '#9ca3af' }}><strong>Origen:</strong> reformas/improvements.</span></div>
+
+                  <div style={cardMini}><span style={labelMini}>Gasto gestor hipotecario</span><strong style={valueMini}>{gestorHipotecario.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</strong><span style={{ fontSize: '0.8rem', color: '#9ca3af' }}><strong>Origen:</strong> gasto de gestor (deducible en base imponible al vender).</span></div>
+
+                  <div style={cardMini}><span style={labelMini}>Plusvalía bruta estimada</span><strong style={{ ...valueMini, color: plusvaliaBruta>=0? '#15803d':'#b91c1c' }}>{plusvaliaBruta.toLocaleString('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits:0 })}</strong><div style={{ fontSize: '0.78rem', color: '#6b7280', marginTop: 8 }}>{/* formula info omitted for brevity */}</div></div>
+
+                  <div style={cardMini}><span style={labelMini}>Impuesto plusvalía (10%)</span><strong style={valueMini}>{impuestoPlusvaliaVenta.toLocaleString('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits:0 })}</strong><span style={{ fontSize: '0.8rem', color: '#9ca3af' }}><strong>Origen:</strong> impuesto sobre la ganancia.</span></div>
+
+                  <div style={cardMini}><span style={labelMini}>Impuesto hipotético 2% (venta &lt; 3 años)</span><strong style={valueMini}>{impuestoHipoteticoNoViviendaHabitual.toLocaleString('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits:0 })}</strong><span style={{ fontSize: '0.8rem', color: '#9ca3af' }}><strong>Origen:</strong> pérdida condición de vivienda habitual si vendes antes de 3 años (escenario hipotético).</span></div>
+
+                  <div style={cardMini}><span style={labelMini}>Plusvalía neta después de impuestos</span><strong style={{ ...valueMini, color: plusvaliaNeta>=0? '#15803d':'#b91c1c' }}>{plusvaliaNeta.toLocaleString('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits:0 })}</strong></div>
+
+                  <div style={cardMini}><span style={labelMini}>Dinero que te quedaría en la cuenta al vender</span><strong style={{ ...valueMini, color: dineroNetoEnCuenta>=0? '#15803d':'#b91c1c' }}>{dineroNetoEnCuenta.toLocaleString('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits:0 })}</strong><span style={{ fontSize: '0.8rem', color: '#9ca3af' }}>Precio venta - hipoteca pendiente - impuestos de venta.</span></div>
+
+                  <div style={cardMini}><span style={labelMini}>Gasto acumulado si hubieras seguido de alquiler</span><strong style={valueMini}>{gastoAlquilerAcumulado.toLocaleString('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits:0 })}</strong><span style={{ fontSize: '0.8rem', color: '#9ca3af' }}>{anioVenta} años × alquiler anual.</span></div>
+
+                  <div style={cardMini}><span style={labelMini}>ROI de la operación (sobre efectivo invertido)</span><strong style={{ ...valueMini, color: roi>=0? '#15803d':'#b91c1c' }}>{isFinite(roi)? roi.toFixed(1): '-' }%</strong><span style={{ fontSize: '0.8rem', color: '#9ca3af' }}>ROI ≈ plusvalía neta / (entrada + notaría + impuestos compra + mejoras)</span></div>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showAlquilarModal && (
+        <div
+          onClick={(e) => { if (e.target === e.currentTarget) setShowAlquilarModal(false); }}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1500 }}
+        >
+          <div style={{ width: 'min(980px, 96%)', maxHeight: '90vh', overflow: 'auto', background: '#fff', borderRadius: 12, padding: 18 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 style={{ margin: 0 }}>Alquilar o vender?</h3>
+              <div>
+                <button onClick={() => setShowAlquilarModal(false)} style={{ padding: '6px 8px', borderRadius: 8 }}>Cerrar</button>
+              </div>
+            </div>
+
+            <div style={{ marginTop: 12 }}>
+              <OpcionAlquiler
+                precioCompra={precioCompra}
+                gastosCompra={gastosNotaria}
+                precioVenta={precioVentaUsado}
+                gastosVenta={gastosNotaria}
+                entrada={entrada}
+                añosHipoteca={añosHipoteca}
+                interesHipoteca={interes}
+                rentaMensualP1={Math.round(alquilerPosible/2)}
+                rentaMensualP2={Math.round(alquilerPosible/2)}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
         {/* 5. Mercado del alquiler: ¿a cuánto deberías alquilar tu piso para que se pague solo? */}
+
+        {showAlquilerMercadoModal && (
+          <div
+            onClick={(e) => { if (e.target === e.currentTarget) setShowAlquilerMercadoModal(false); }}
+            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1500 }}
+          >
+            <div style={{ width: 'min(920px, 96%)', maxHeight: '90vh', overflow: 'auto', background: '#fff', borderRadius: 12, padding: 18 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h3 style={{ margin: 0 }}>Mercado del alquiler: ¿a cuánto debería alquilarse tu piso?</h3>
+                <div>
+                  <button onClick={() => setShowAlquilerMercadoModal(false)} style={{ padding: '6px 8px', borderRadius: 8 }}>Cerrar</button>
+                </div>
+              </div>
+
+              <div style={{ marginTop: 12 }}>
+                <section style={{ marginTop: "24px" }}>
+                  <p style={{ fontSize: "0.9rem", color: "#6b7280", marginBottom: "10px" }}>
+                    Aquí estimas la posibilidad de <strong>alquilar tu propia vivienda desde el minuto 1</strong>:
+                    cuánto debería cobrarse de alquiler para cubrir hipoteca + gastos fijos y, además, darte una rentabilidad sobre el dinero que has puesto.
+                  </p>
+
+                  <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1.2fr) minmax(0, 1.8fr)", gap: "16px", alignItems: "flex-start" }}>
+                    <div style={cardMini}>
+                      <span style={labelMini}>Alquiler que crees que podrías cobrar por TU vivienda</span>
+                      <input type="number" value={alquilerPosible} onChange={(e) => setAlquilerPosible(Number(e.target.value))} min={0} style={{ ...inputStyle, marginTop: "4px" }} />
+                      <span style={{ fontSize: "0.8rem", color: "#9ca3af" }}>Este dato viene del mercado del alquiler de la zona (ideal: portales inmobiliarios, comparables, etc.).</span>
+                    </div>
+
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "12px" }}>
+                      <div style={cardMini}>
+                        <span style={labelMini}>Alquiler mínimo para “pagarse solo”</span>
+                        <strong style={valueMini}>{alquilerEquilibrio.toLocaleString("es-ES", { style: "currency", currency: "EUR" })} / mes</strong>
+                      </div>
+                      <div style={cardMini}>
+                        <span style={labelMini}>Renta estimada que propones</span>
+                        <strong style={valueMini}>{alquilerPosible.toLocaleString("es-ES", { style: "currency", currency: "EUR" })} / mes</strong>
+                      </div>
+                      <div style={cardMini}>
+                        <span style={labelMini}>Rentabilidad sobre efectivo</span>
+                        <strong style={valueMini}>{rentabilidadAlquilerSobreEfectivo.toFixed(2)}%</strong>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+              </div>
+            </div>
+          </div>
+        )}
+
+        { !hideSection5 && (
         <section style={{ marginTop: "32px" }}>
           <h2
             style={{
@@ -1745,53 +2369,13 @@ function DecisionVivienda() {
           </div>
         </section>
 
-        {/* 6. Estimador detallado de alquiler (componente separado) */}
-        <section style={{ marginTop: "32px" }}>
-          <OpcionAlquiler />
-        </section>
+        )}
+
+        {/* 6. Estimador detallado de alquiler (componente separado). Ahora se abre desde modal para evitar repetir inputs. */}
 
         {/* Botón: evaluar todo con GPT */}
         <section style={{ marginTop: 20 }}>
-          <EvaluaGPT data={{
-            precioCompra,
-            valorMercadoActual,
-            entrada,
-            interes,
-            añosHipoteca,
-            añosFijo,
-            euribor,
-            margen,
-            gastosNotaria,
-            gestorHipotecario,
-            mejoras,
-            impuestoCompraPercent,
-            impuestosCompra,
-            anioVenta,
-            porcentajeRevalorizacion,
-            alquilerActual,
-            alquilerPosible,
-            ibiBasura,
-            comunidad,
-            importeFinanciado,
-            cuotaMensual,
-            totalInteresesEstimados,
-            interesesPagadosHastaVenta,
-            saldoRestanteHipoteca,
-            plusvaliaBruta,
-            impuestoPlusvaliaVenta,
-            impuestoHipoteticoNoViviendaHabitual,
-            plusvaliaNeta,
-            dineroNetoEnCuenta,
-            inversionEfectivo,
-            roi,
-            alquilerEquilibrio,
-            alquilerPara3Porciento,
-            alquilerPara5Porciento,
-            escenariosPorAño,
-            escenariosConNivel,
-            escenariosGuardados,
-            evolucionPrecio
-          }} />
+          <EvaluaGPT data={evaluaData} />
         </section>
         {/* Dashboard compacto: ocultable con botón */}
         <section style={{ marginTop: 18 }}>
