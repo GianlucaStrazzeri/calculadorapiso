@@ -1,0 +1,25 @@
+.cr-counter-panel{display:flex;flex-direction:column;gap:12px}
+.cr-counter-header{display:flex;justify-content:space-between;gap:18px}
+.cr-chip-label{margin:0;font-size:0.85rem;color:#64748b}
+.cr-counter-exercise{margin:0;display:flex;align-items:center;gap:8px;font-size:1.12rem}
+.cr-video-thumb{display:inline-flex;vertical-align:middle;margin-right:8px}
+.cr-exercise-description{margin:6px 0;color:#374151}
+.cr-exercise-small-type{margin:0;font-size:0.88rem;color:#6b7280}
+.cr-series-info{display:flex;align-items:center;gap:6px}
+.cr-weight-row{display:flex;align-items:center;gap:8px}
+.cr-target-input,.cr-add-input{padding:8px 10px;border-radius:8px;border:1px solid #d1d5db;background:#f9fafb}
+.cr-counter-center{display:flex;justify-content:center}
+.cr-counter-circle{width:220px;height:220px;border-radius:999px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:6px solid var(--accent-color,#2563eb)}
+.cr-reps-number{font-size:48px;font-weight:700}
+.cr-reps-label{font-size:0.9rem;color:#6b7280}
+.cr-reps-target{font-size:0.9rem;color:#374151;margin-top:6px}
+.cr-counter-buttons{display:flex;gap:8px;justify-content:center}
+.cr-btn{padding:8px 12px;border-radius:999px;border:1px solid transparent;background:#fff;cursor:pointer}
+.cr-btn-primary{background:#2563eb;color:#fff;border-color:#1d4ed8}
+.cr-btn-secondary{background:#f9fafb;color:#2563eb;border-color:#bfdbfe}
+.cr-btn-accent{background:var(--accent-color,#2563eb);color:#fff;border-color:transparent}
+.cr-btn-tabata{margin-left:6px}
+.cr-add-multiple-row{display:flex;gap:8px;align-items:center}
+.cr-btn-full{display:block;width:100%;padding:10px;border-radius:10px;border:2px solid var(--accent-color,#2563eb);background:transparent;color:var(--accent-color,#2563eb);font-weight:700}
+.cr-target-row{display:flex;align-items:center;gap:8px}
+@media (max-width:600px){.cr-counter-circle{width:180px;height:180px}.cr-counter-header{flex-direction:column}}

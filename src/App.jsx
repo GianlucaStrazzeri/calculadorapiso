@@ -1,10 +1,102 @@
 // src/App.jsx
 // Layout principal con navegación + rutas
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Routes, Route, Link, useMatch } from "react-router-dom";
 import DecisionVivienda from "./pages/Vivienda/DecisionVivienda";
 import ContadorReps from "./pages/Ejercicio/ContadorReps";
+import TrainingPlanner from "./pages/Ejercicio/TrainingPlanner";
+
+function AppsMenu() {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    function onClick(e) {
+      if (!ref.current) return;
+      if (!ref.current.contains(e.target)) setOpen(false);
+    }
+    function onKey(e) {
+      if (e.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("click", onClick);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("click", onClick);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, []);
+
+  return (
+    <div ref={ref} style={{ position: "relative" }}>
+      <button
+        type="button"
+        aria-expanded={open}
+        onClick={() => setOpen((s) => !s)}
+        style={{
+          padding: "10px 18px",
+          borderRadius: "999px",
+          border: "1px solid #d1d5db",
+          background: "#ffffff",
+          color: "#374151",
+          fontWeight: 600,
+          fontSize: "0.95rem",
+          cursor: "pointer",
+        }}
+      >
+        Apps ▾
+      </button>
+
+      {open && (
+        <div
+          role="menu"
+          style={{
+            position: "absolute",
+            top: "calc(100% + 8px)",
+            right: 0,
+            minWidth: 220,
+            background: "#fff",
+            border: "1px solid #e5e7eb",
+            borderRadius: 8,
+            boxShadow: "0 8px 24px rgba(15,23,42,0.08)",
+            padding: 8,
+            zIndex: 40,
+          }}
+        >
+          <Link
+            to="/calculadora"
+            onClick={() => setOpen(false)}
+            style={{
+              display: "block",
+              padding: "8px 12px",
+              borderRadius: 6,
+              color: "#111827",
+              textDecoration: "none",
+              fontWeight: 600,
+            }}
+          >
+            App Inmobiliaria
+          </Link>
+
+          <Link
+            to="/contador-reps"
+            onClick={() => setOpen(false)}
+            style={{
+              display: "block",
+              padding: "8px 12px",
+              borderRadius: 6,
+              color: "#111827",
+              textDecoration: "none",
+              fontWeight: 600,
+            }}
+          >
+            App Ejercicios
+          </Link>
+        </div>
+      )}
+    </div>
+  );
+}
 
 function Home() {
   const CLIENTS_KEY = "cr_clients_v1";
@@ -81,41 +173,8 @@ function Home() {
         </p>
 
         <div style={{ display: "flex", justifyContent: "center", gap: "12px" }}>
-          {/* Botón que abre la calculadora */}
-          <Link
-            to="/calculadora"
-            style={{
-              padding: "10px 18px",
-              borderRadius: "999px",
-              border: "none",
-              background:
-                "linear-gradient(135deg, #2563eb, #1d4ed8)", // azul suave
-              color: "white",
-              fontWeight: 600,
-              fontSize: "0.95rem",
-              textDecoration: "none",
-              boxShadow: "0 10px 25px rgba(37, 99, 235, 0.35)",
-            }}
-          >
-            Ir a la calculadora
-          </Link>
-
-          {/* Botón que abre el contador de repeticiones */}
-          <Link
-            to="/contador-reps"
-            style={{
-              padding: "10px 18px",
-              borderRadius: "999px",
-              border: "1px solid #d1d5db",
-              background: "#ffffff",
-              color: "#374151",
-              fontWeight: 600,
-              fontSize: "0.95rem",
-              textDecoration: "none",
-            }}
-          >
-            Contador de repeticiones
-          </Link>
+          {/* Single Apps button that opens a small dropdown with available apps */}
+          <AppsMenu />
 
           {/* Quick links per cliente (if any) */}
           {clients && clients.length > 0 && (
@@ -141,31 +200,12 @@ function Home() {
                 </Link>
               ))}
 
-              <button
-                type="button"
-                onClick={reloadClientsAndVolumes}
-                style={{ padding: "8px 10px", borderRadius: 999, border: "1px solid #e5e7eb", background: "#fff", cursor: "pointer" }}
-              >
-                Recargar
-              </button>
+              {/* Recargar: oculto en la vista '/' según preferencia del usuario */}
             </div>
           )}
 
           {/* Botón secundario (lo puedes usar luego para otra página) */}
-          <button
-            type="button"
-            style={{
-              padding: "10px 18px",
-              borderRadius: "999px",
-              border: "1px solid #d1d5db",
-              background: "#ffffff",
-              color: "#374151",
-              fontSize: "0.9rem",
-              cursor: "default",
-            }}
-          >
-            Próximamente: análisis de mercado
-          </button>
+          {/* Botón 'Próximamente' oculto en '/' */}
         </div>
       </div>
     </div>
@@ -211,9 +251,12 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/calculadora" element={<DecisionVivienda />} />
         <Route path="/contador-reps" element={<ContadorReps />} />
+        {/* TrainingPlanner temporarily disabled while debugging HMR/SW */}
         {/* New routes: support per-client views and alternate path */}
         <Route path="/contadorreps" element={<ContadorReps />} />
         <Route path="/contadorreps/:clientId" element={<ContadorReps />} />
+        {/* Safe placeholder route for the Training Planner while debugging HMR/SW */}
+        <Route path="/training-planner" element={<TrainingPlanner />} />
       </Routes>
     </div>
   );

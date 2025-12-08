@@ -1,4 +1,22 @@
 // ExerciseSelector.jsx
+//
+// Componente: ExerciseSelector
+// - Propósito: mostrar un panel de búsqueda y selección de ejercicios para
+//   la sesión de entrenamiento. Permite filtrar por texto, equipamiento, objetivo,
+//   zona y nivel, abrir un modal de filtros avanzados y añadir nuevos ejercicios.
+// - Props:
+//    `exercises` (Array): lista de ejercicios disponibles (base + personalizados).
+//    `selectedExercise` (Object): ejercicio actualmente seleccionado.
+//    `onChange` (fn): callback que se invoca con el ejercicio seleccionado.
+//    `onOpenAddExercise` (fn): callback para abrir el modal de añadir ejercicio.
+//    `disableAdd` (bool): si true oculta el botón de añadir ejercicio.
+// - Comportamiento:
+//    * Calcula opciones de filtros automáticamente a partir de metadatos de
+//      los ejercicios y combina con valores por defecto si no hay datos.
+//    * Filtra la lista en memoria según texto y filtros seleccionados.
+//    * Abre `ModalFiltroEjercicios` para editar filtros avanzados.
+// - Estilos: utiliza clases definidas en `ContadorReps.css` (compartidas en la app).
+//
 import React, { useState, useMemo } from "react";
 import { EXERCISE_TYPES } from "./exercisesConfig";
 import "./ContadorReps.css";

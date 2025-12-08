@@ -1,4 +1,27 @@
 // ClientSelector.jsx
+//
+// Componente: ClientSelector
+// - Propósito: Mostrar un selector/buscador de clientes (pacientes) para el
+//   planificador de ejercicios. Permite buscar por nombre/nota/email/id,
+//   seleccionar un cliente, copiar o abrir un enlace público al cliente y
+//   abrir el modal para añadir un nuevo cliente.
+// - Props:
+//    `clients` (Array): lista de objetos cliente { id, nombre, nota, ... }.
+//    `selectedClientId` (string|null): id del cliente actualmente seleccionado.
+//    `onChangeClient` (fn): callback cuando cambia la selección (id|null).
+//    `onOpenAddClient` (fn): callback para abrir el modal de añadir cliente.
+//    `disableAdd` (bool): si true oculta el botón de "Añadir cliente".
+//    `fixedClientId` (string|null): si se establece, bloquea la edición (vista pública).
+// - Comportamiento:
+//    - Filtra la lista según el término de búsqueda.
+//    - Genera un enlace público `/contadorreps/:clientId` que se puede copiar
+//      al portapapeles o abrir en una nueva pestaña.
+//    - Mantiene compatibilidad visual con los estilos compartidos (.cr-*)
+//
+// Notas:
+// - Este componente está localizado en `src/pages/Ejercicio/Client`.
+// - Los estilos se cargan desde `ClientSelector.css`.
+//
 import React, { useState, useMemo } from "react";
 import "./ClientSelector.css"; // o un css propio si prefieres
 
@@ -10,6 +33,8 @@ export function ClientSelector({
   // new props:
   disableAdd = false, // hide the add button when true
   fixedClientId = null, // if set, make the selector read-only and force this client
+  // callback to open the Assign modal from outside (renders a small + inside the select)
+  onOpenAssign = null,
 }) {
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -79,18 +104,36 @@ export function ClientSelector({
           Todavía no hay clientes. Añade el primero para asignarle ejercicios.
         </p>
       ) : (
-        <select
-          className="cr-select"
-          value={selectedClientId || ""}
-          onChange={(e) => onChangeClient(e.target.value || null)}
-        >
-          <option value="">Sin cliente seleccionado</option>
-          {filtered.map((client) => (
-            <option key={client.id} value={client.id}>
-              {client.nombre} {client.nota ? `· ${client.nota}` : ""}
-            </option>
-          ))}
-        </select>
+        <div className="cr-select-wrap">
+          <select
+            className="cr-select"
+            value={selectedClientId || ""}
+            onChange={(e) => onChangeClient(e.target.value || null)}
+          >
+            <option value="">Sin cliente seleccionado</option>
+            {filtered.map((client) => (
+              <option key={client.id} value={client.id}>
+                {client.nombre} {client.nota ? `· ${client.nota}` : ""}
+              </option>
+            ))}
+          </select>
+
+          {/* Small in-select assign button (visually inside the select) */}
+          {selectedClientId && !fixedClientId && onOpenAssign && (
+            <button
+              type="button"
+              className="cr-select-add-btn"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onOpenAssign();
+              }}
+              title="Asignar ejercicio al cliente"
+            >
+              ➕
+            </button>
+          )}
+        </div>
       )}
 
       {selectedClientId && (

@@ -1,0 +1,16 @@
+{
+  "name": "Calculadora - Vender o Alquilar",
+  "short_name": "Calculadora",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0f172a",
+  "description": "Herramienta para decidir si vender o alquilar una vivienda.",
+  "icons": [
+    {
+      "src": "/vite.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

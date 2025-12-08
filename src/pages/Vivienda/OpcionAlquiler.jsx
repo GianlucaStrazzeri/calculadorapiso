@@ -62,6 +62,14 @@ export default function OpcionAlquiler(props = {}) {
   const [ingresoBrutoP2, setIngresoBrutoP2] = useState(initIngresoBrutoP2);
   const [porcPerdidaFiscalAnual, setPorcPerdidaFiscalAnual] = useState(initPorcPerdidaFiscalAnual);
   const [perdidaExencion, setPerdidaExencion] = useState(initPerdidaExencion);
+  // Additional expense inputs requested by user
+  const [comunidadMensual, setComunidadMensual] = useState(0);
+  const [ibiAnual, setIbiAnual] = useState(0);
+  const [basuraAnual, setBasuraAnual] = useState(0);
+  const [seguroAnual, setSeguroAnual] = useState(0);
+  const [perdidaDeduccionesAnual, setPerdidaDeduccionesAnual] = useState(3000);
+  const [intereses3AniosTotal, setIntereses3AniosTotal] = useState(0);
+  const [useSimulatedIntereses, setUseSimulatedIntereses] = useState(true);
 
   const rentaMensualTotal = Number(rentaMensualP1 || 0) + Number(rentaMensualP2 || 0);
 
@@ -120,12 +128,62 @@ export default function OpcionAlquiler(props = {}) {
     return { interesesPagadosHipotecaHasta: interesesAcum, saldoHipotecaRestante: saldo };
   }, [importeFinanciado, añosHipoteca, interesHipoteca, anosAlquiler, cuotaHipotecaMensual]);
 
+  // Simulate interests paid in the first 3 years (36 months) — used if user wants auto-fill
+  const interesesPagadosPrimeros3Anios = useMemo(() => {
+    const P = Number(importeFinanciado || 0);
+    const nTotal = Math.max(1, Number(añosHipoteca || 0)) * 12;
+    const meses = Math.min(nTotal, 36);
+    const r = (Number(interesHipoteca) || 0) / 100 / 12;
+    let saldo = P;
+    let interesesAcum = 0;
+    const cuota = cuotaHipotecaMensual;
+    for (let m = 0; m < meses && saldo > 0; m++) {
+      const interesMes = saldo * r;
+      const amortizacion = cuota - interesMes;
+      if (!isFinite(amortizacion)) break;
+      saldo = Math.max(0, saldo - amortizacion);
+      interesesAcum += interesMes;
+    }
+    return interesesAcum;
+  }, [importeFinanciado, añosHipoteca, interesHipoteca, cuotaHipotecaMensual]);
+
   // Break-even monthly rent (total per month, both partners) to cover the extra tax + fiscal losses + exencion loss
   const breakEvenMonthlyTotal = useMemo(() => {
     const need = incrementoImpuestoPorAmort + perdidaFiscalEstim + Number(perdidaExencion || 0);
     const denom = Math.max(1, 12 * Math.max(anosAlquiler, 1));
     return need / denom;
   }, [incrementoImpuestoPorAmort, perdidaFiscalEstim, perdidaExencion, anosAlquiler]);
+
+  // User-requested monthly cost aggregation (to compute rent to not lose money)
+  const gastosMensualesExtras = useMemo(() => {
+    const cuota = Number(cuotaHipotecaMensual || 0);
+    const comunidad = Number(comunidadMensual || 0);
+    const ibi = Number(ibiAnual || 0) / 12;
+    const basura = Number(basuraAnual || 0) / 12;
+    const seguro = Number(seguroAnual || 0) / 12;
+    // Spread pérdida de deducciones annually (user provided annual amount)
+    const perdidaDeducciones = Number(perdidaDeduccionesAnual || 0) / 12;
+    // Spread intereses correspondientes a los 3 años en cuotas mensuales (36 meses)
+    // decide how to annualize / spread the penalties and interests across the rental years
+    const anos = Math.max(1, Number(anosAlquiler || 1));
+    const perdidaDeduccionesMensual = Number(perdidaDeduccionesAnual || 0) / (12 * anos);
+    const interesesTotal = useSimulatedIntereses ? Number(interesesPagadosPrimeros3Anios || 0) : Number(intereses3AniosTotal || 0);
+    const interesesMensual = interesesTotal / (12 * anos);
+    return cuota + comunidad + ibi + basura + seguro + perdidaDeduccionesMensual + interesesMensual;
+  }, [cuotaHipotecaMensual, comunidadMensual, ibiAnual, basuraAnual, seguroAnual, perdidaDeduccionesAnual, intereses3AniosTotal, useSimulatedIntereses, interesesPagadosPrimeros3Anios, anosAlquiler]);
+
+  // To cover the monthly costs after applying 21% tax on the rent, gross rent needed R satisfies: R*(1-0.21) >= totalCosts
+  const grossRentNeededToCoverExtras = useMemo(() => {
+    const totalNeeded = gastosMensualesExtras + breakEvenMonthlyTotal; // include previous break-even
+    const netFactor = Math.max(0.01, 1 - 0.21); // avoid div by zero
+    return totalNeeded / netFactor;
+  }, [gastosMensualesExtras, breakEvenMonthlyTotal]);
+
+  // Display helpers for results (monthly breakdowns)
+  const anos = Math.max(1, Number(anosAlquiler || 1));
+  const perdidaDeduccionesMensualDisplay = Number(perdidaDeduccionesAnual || 0) / (12 * anos);
+  const interesesTotalUsed = useSimulatedIntereses ? Number(interesesPagadosPrimeros3Anios || 0) : Number(intereses3AniosTotal || 0);
+  const interesesMensualDisplay = interesesTotalUsed / (12 * anos);
 
   function handlePresetP1(amount) { setRentaMensualP1(amount); }
   function handlePresetP2(amount) { setRentaMensualP2(amount); }
@@ -216,6 +274,45 @@ export default function OpcionAlquiler(props = {}) {
         <label>Estimación pérdida exención por reinversión (€)
           <input type="number" value={perdidaExencion} onChange={e => setPerdidaExencion(Number(e.target.value))} />
         </label>
+        <h4>Gastos adicionales (para calcular renta mínima)</h4>
+        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+          <label>Comunidad (€/mes)
+            <input type="number" value={comunidadMensual} onChange={e => setComunidadMensual(Number(e.target.value))} />
+          </label>
+          <label>IBI (€/año)
+            <input type="number" value={ibiAnual} onChange={e => setIbiAnual(Number(e.target.value))} />
+          </label>
+          <label>Basura (€/año)
+            <input type="number" value={basuraAnual} onChange={e => setBasuraAnual(Number(e.target.value))} />
+          </label>
+          <label>Seguro de la casa (€/año)
+            <input type="number" value={seguroAnual} onChange={e => setSeguroAnual(Number(e.target.value))} />
+          </label>
+        </div>
+
+        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 8 }}>
+          <label>Pérdida deducciones (€/año, p.ej. 3000)
+            <input type="number" value={perdidaDeduccionesAnual} onChange={e => setPerdidaDeduccionesAnual(Number(e.target.value))} />
+            <div className="small-note">Se distribuye entre los años de alquiler (por defecto se reparte entre {anosAlquiler || 1} año(es)).</div>
+          </label>
+          <label style={{ minWidth: 240 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span>Intereses (total, 3 años) (€)</span>
+              <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginLeft: 8 }}>
+                <input type="checkbox" checked={useSimulatedIntereses} onChange={(e) => setUseSimulatedIntereses(Boolean(e.target.checked))} />
+                <small>Usar intereses simulados</small>
+              </label>
+            </div>
+            {useSimulatedIntereses ? (
+              <div style={{ marginTop: 6 }}>
+                <div style={{ color: '#6b7280', fontSize: 13 }}>Intereses estimados (primeros 3 años) calculados: {interesesPagadosPrimeros3Anios.toFixed(2)} €</div>
+              </div>
+            ) : (
+              <input type="number" value={intereses3AniosTotal} onChange={e => setIntereses3AniosTotal(Number(e.target.value))} />
+            )}
+            <div className="small-note">Los intereses se reparten entre los años de alquiler (mensualmente).</div>
+          </label>
+        </div>
         <p className="note">Nota: la amortización anual se fija en 3% del valor de construcción. Al vender, la amortización acumulada reduce el valor de adquisición y por tanto puede aumentar la ganancia patrimonial sujeta a IRPF.</p>
       </section>
 
@@ -285,6 +382,16 @@ export default function OpcionAlquiler(props = {}) {
           <div className="result-item">
             <div><strong>Break-even por persona (50/50):</strong> € {(breakEvenMonthlyTotal/2).toFixed(2)} / mes</div>
             <div className="formula">Fórmula: break-even total ÷ 2 = {breakEvenMonthlyTotal.toLocaleString()} ÷ 2 = {(breakEvenMonthlyTotal/2).toLocaleString()}</div>
+          </div>
+
+          <div className="result-item">
+            <div><strong>Gastos mensuales extra (hipoteca + comunidad + IBI + basura + seguro + pérdida deducciones repartida + intereses repartidos):</strong> € {gastosMensualesExtras.toFixed(2)}</div>
+            <div className="formula">Desglose: cuota hipoteca {cuotaHipotecaMensual.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })} + comunidad {comunidadMensual.toLocaleString()} + IBI/mes {(ibiAnual/12).toFixed(2)} + basura/mes {(basuraAnual/12).toFixed(2)} + seguro/mes {(seguroAnual/12).toFixed(2)} + pérdida deducciones/mes {perdidaDeduccionesMensualDisplay.toFixed(2)} + intereses/mes {interesesMensualDisplay.toFixed(2)} {useSimulatedIntereses ? '(intereses simulados)' : ''}</div>
+          </div>
+
+          <div className="result-item">
+            <div><strong>Renta bruta mínima por mes (incluye 21% impuesto sobre alquiler):</strong> € {grossRentNeededToCoverExtras.toFixed(2)}</div>
+            <div className="formula">Fórmula: renta_bruta × (1 − 0.21) = gastos totales → renta_bruta = gastos_totales ÷ 0.79</div>
           </div>
 
           <div className="result-item">

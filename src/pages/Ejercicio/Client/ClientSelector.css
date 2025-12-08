@@ -105,6 +105,36 @@
   background-repeat: no-repeat;
 }
 
+/* Wrap select to allow placing a button visually inside the select area */
+.cr-select-wrap {
+  position: relative;
+}
+
+/* Ensure select has room for the in-select button */
+.cr-select {
+  padding-right: 44px; /* make space for the small + button */
+}
+
+.cr-select-add-btn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-radius: 999px;
+  padding: 4px 8px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  color: #374151;
+  font-size: 0.95rem;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.06);
+}
+
+.cr-select-add-btn:hover {
+  background: #f3f4f6;
+  transform: translateY(-50%) scale(1.02);
+}
+
 .cr-select:focus {
   border-color: #2563eb;
   background-color: #ffffff;

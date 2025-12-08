@@ -1,6 +1,34 @@
-// ContadorReps.jsx - Contador de repeticiones con peso y calendario de volumen
+// ContadorReps.jsx
+//
+// Página principal del contador / planificador de entrenamiento.
+// - Propósito: gestionar sesiones de repeticiones por ejercicio y mostrar
+//   herramientas auxiliares (selector de ejercicios, temporizador, historial,
+//   calendario de volumen, asignaciones a clientes, etc.).
+// - Comportamiento clave:
+//    * Permite seleccionar ejercicios (base + personalizados) y contar repeticiones.
+//    * Mantiene un historial de series completadas (`sessionHistory`).
+//    * Soporta asignaciones por cliente (localStorage key `cr_assignments_v1`) y
+//      un selector de clientes (`cr_clients_v1`). Las asignaciones pueden marcarse
+//      como completadas desde la UI y se registran en el historial.
+//    * Incluye utilidades: modal para añadir ejercicios, Tabata, vista de historial
+//      y un calendario de volumen.
+// - Persistencia/localStorage:
+//    `cr_state_v1`         : estado principal (usado por la app)
+//    `cr_custom_exercises_v1`: ejercicios personalizados
+//    `cr_clients_v1`        : lista de clientes
+//    `cr_assignments_v1`    : asignaciones de ejercicios a clientes
+// - Componentes relevantes usados aquí:
+//    `ExerciseSelector`, `CounterPanel`, `TimerPanel`, `HistoryPanel`,
+//    `VolumeCalendar`, `AddExerciseModal`, `AssignExercisePanel`, `ClientSelector`, `VideoPreview`.
+//
+// Notas:
+// - La vista puede renderizarse en modo público para un `clientId` específico
+//   cuando la ruta incluye `/contadorreps/:clientId`.
+// - Para evitar problemas de parsing en JSX, la lógica compleja se calcula
+//   fuera del return.
+
 import React, { useState, useEffect, useRef } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import "./ContadorReps.css";
 import { EXERCISES as BASE_EXERCISES } from "./exercisesConfig";
 import ExerciseSelector from "./ExerciseSelector";
@@ -11,9 +39,11 @@ import VolumeCalendar from "./VolumeCalendar";
 import AddExerciseModal from "./AddExerciseModal";
 import TabataTrainer from "./TabataTrainer";
 import TabataOverlay from "./TabataOverlay";
-import { AddClientModal } from "../Client/AddClientModal";
-import { AssignExercisePanel } from "../Client/AssignExercisePanel";
-import { ClientSelector } from "../Client/ClientSelector";
+import VideoPreview from "./VideoPreview";
+import { AddClientModal } from "./Client/AddClientModal";
+import { AssignExercisePanel } from "./Client/AssignExercisePanel";
+import { ClientSelector } from "./Client/ClientSelector";
+import FeedbackForm from "./FeedbackForm";
 
 const STORAGE_KEY = "cr_state_v1";
 const CUSTOM_EXERCISES_KEY = "cr_custom_exercises_v1";
@@ -22,6 +52,9 @@ const DEFAULT_SECONDS = 30 * 60; // 30 minutos
 
 export default function ContadorReps() {
   const [customExercises, setCustomExercises] = useState([]);
+  const [assignedOpen, setAssignedOpen] = useState(true);
+  const [showAssignmentDebug, setShowAssignmentDebug] = useState(false);
+  const [showAssignmentsTable, setShowAssignmentsTable] = useState(false);
   const [selectedExercise, setSelectedExercise] = useState(
     BASE_EXERCISES.find((e) => e.videoUrl) || BASE_EXERCISES[0]
   );
@@ -39,6 +72,7 @@ export default function ContadorReps() {
   const [showAddClientModal, setShowAddClientModal] = useState(false);
   const [exerciseAssignments, setExerciseAssignments] = useState([]);
   const [showAssignModal, setShowAssignModal] = useState(false);
+  const [showPublicFeedback, setShowPublicFeedback] = useState(false);
 
   // TIMER
   const [timeLeft, setTimeLeft] = useState(DEFAULT_SECONDS);
@@ -360,6 +394,22 @@ export default function ContadorReps() {
 
   const isPatientPublicView = Boolean(params && params.clientId);
 
+  // Precompute client assignments for the selected client (avoid IIFE in JSX)
+  const clientAssignmentsForSelected = React.useMemo(() => {
+    if (!selectedClientId) return [];
+    return exerciseAssignments.filter((a) => a.clientId === selectedClientId);
+  }, [exerciseAssignments, selectedClientId]);
+
+  // Determine which exercise should be shown in the CounterPanel when in public patient view.
+  // Prefer the first active assigned exercise, otherwise fallback to the first assignment.
+  const assignedExerciseForCounter = React.useMemo(() => {
+    if (!isPatientPublicView) return selectedExercise;
+    if (!clientAssignmentsForSelected || clientAssignmentsForSelected.length === 0) return selectedExercise;
+    const pick = clientAssignmentsForSelected.find((a) => a.activo) || clientAssignmentsForSelected[0];
+    const ex = [...BASE_EXERCISES, ...customExercises].find((e) => e.id === pick.exerciseId);
+    return ex || selectedExercise;
+  }, [isPatientPublicView, clientAssignmentsForSelected, BASE_EXERCISES, customExercises, selectedExercise]);
+
   // When viewing a specific client, compute totals only for that client's history
   const totalsByExercise = React.useMemo(() => {
     const map = {};
@@ -428,7 +478,7 @@ export default function ContadorReps() {
         {/* HEADER: ocultar si es vista pública del paciente */}
         {!isPatientPublicView && (
           <header className="cr-header">
-            <h1 className="cr-title">Contador de Repeticiones</h1>
+            <h1 className="cr-title">Planificador de entrenamiento</h1>
             <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
               <button
                 type="button"
@@ -460,21 +510,54 @@ export default function ContadorReps() {
                     }}
                     disableAdd={isPatientPublicView}
                     fixedClientId={isPatientPublicView ? selectedClientId : null}
+                    onOpenAssign={() => setShowAssignModal(true)}
                 />
+                  {isPatientPublicView && selectedClientId && (
+                    <button
+                      type="button"
+                      onClick={() => setShowAssignmentsTable(true)}
+                      style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #e5e7eb', background: '#fff', color: '#374151', fontSize: '0.85rem', cursor: 'pointer' }}
+                    >
+                      Ver asignaciones
+                    </button>
+                  )}
                 {selectedClientId && (
-                  <button
-                    type="button"
+                  <Link
+                    to={`/training-planner?clientId=${encodeURIComponent(selectedClientId)}`}
                     className="cr-btn"
-                    onClick={() => setShowAssignModal(true)}
-                    style={{ borderRadius: 999, padding: "6px 8px", fontSize: "0.95rem" }}
-                    title="Asignar ejercicio al cliente"
+                    style={{ borderRadius: 999, padding: "6px 10px", fontSize: "0.95rem", textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
+                    title="Abrir planificador para este cliente"
                   >
-                    ➕
-                  </button>
+                    📅 Planificador
+                  </Link>
+                )}
+                {selectedClientId && (
+                  <Link
+                    to={`/training-planner?clientId=${encodeURIComponent(selectedClientId)}&openSummary=1`}
+                    className="cr-btn"
+                    style={{ borderRadius: 999, padding: "6px 10px", fontSize: "0.85rem", textDecoration: 'none', display: 'inline-flex', alignItems: 'center', marginLeft: 8 }}
+                    title="Resumen del planificador para este cliente"
+                  >
+                    Resumen
+                  </Link>
                 )}
               </div>
             </div>
           </header>
+        )}
+        {/* Public feedback modal (opened from the assigned work header) */}
+        {showPublicFeedback && (
+          <div className="cr-modal-backdrop" onClick={() => setShowPublicFeedback(false)}>
+            <div className="cr-modal" style={{ maxWidth: 720 }} onClick={(e) => e.stopPropagation()}>
+              <div className="cr-modal-header">
+                <h3>Feedback</h3>
+                <button type="button" className="cr-modal-close" onClick={() => setShowPublicFeedback(false)}>✕</button>
+              </div>
+              <div className="cr-modal-body">
+                <FeedbackForm sessionId={null} onClose={() => setShowPublicFeedback(false)} onSaved={() => { /* no-op */ }} />
+              </div>
+            </div>
+          </div>
         )}
 
         {/* LAYOUT PRINCIPAL */}
@@ -482,41 +565,177 @@ export default function ContadorReps() {
           {/* COLUMNA IZQUIERDA */}
           <div className="cr-left-column">
             {/* Calendario de volumen movido arriba */}
-            <div style={{ marginBottom: 12 }}>
-              {/* If viewing a public patient, show only that patient's history in the calendar */}
-              {isPatientPublicView ? (
-                <VolumeCalendar sessionHistory={sessionHistory.filter((h) => h.clientId === selectedClientId)} />
-              ) : (
-                <VolumeCalendar sessionHistory={sessionHistory} />
-              )}
+            {/* In public patient view we hide the full exercise grid and calendar
+                to expose only the assigned work and counter panel. */}
+            {!isPatientPublicView && (
+              <>
+                <div style={{ marginBottom: 12 }}>
+                  <VolumeCalendar sessionHistory={sessionHistory} />
+                </div>
 
+                <ExerciseSelector
+                  exercises={allExercises}
+                  selectedExercise={selectedExercise}
+                  onChange={handleExerciseChange}
+                  onOpenAddExercise={() => setShowAddExerciseModal(true)}
+                  disableAdd={isPatientPublicView}
+                />
+              </>
+            )}
+
+            {/* Show assignments for the selected client when viewing their page */}
+            {isPatientPublicView && selectedClientId && (
+              <div style={{ marginTop: 12 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                  <h4 style={{ margin: 0 }}>Trabajo asignado</h4>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button className="cr-btn" onClick={() => setShowPublicFeedback(true)}>Feedback</button>
+                    <button className="cr-btn" onClick={() => setAssignedOpen((s) => !s)}>{assignedOpen ? 'Ocultar' : 'Mostrar'}</button>
+                  </div>
+                </div>
+                {assignedOpen && (
+                  <div style={{ padding: 12, background: '#fff', border: '1px solid #e6eef8', borderRadius: 8 }}>
+                    {clientAssignmentsForSelected.length === 0 ? (
+                      <div style={{ color: '#6b7280' }}>No hay asignaciones para este cliente.</div>
+                    ) : (
+                      <div style={{ display: 'grid', gap: 8 }}>
+                        {clientAssignmentsForSelected.map((a) => {
+                          const ex = [...BASE_EXERCISES, ...customExercises].find((e) => e.id === a.exerciseId) || null;
+                          return (
+                            <div key={a.id} style={{ display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'space-between' }}>
+                              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                                {ex ? <VideoPreview exercise={ex} size={'small'} asButton={false} /> : null}
+                                <div>
+                                  <div style={{ fontWeight: 700 }}>{ex?.label || a.exerciseId}</div>
+                                  <div style={{ fontSize: 12, color: '#6b7280' }}>
+                                    {a.targetSeries ? `${a.targetSeries} series · ` : ''}{a.targetReps ? `${a.targetReps} reps · ` : ''}{a.targetWeightKg ? ` ${a.targetWeightKg} kg` : ''}
+                                    {a.nota ? ` · ${a.nota}` : ''}
+                                  </div>
+                                </div>
+                              </div>
+                              <div style={{ display: 'flex', gap: 8 }}>
+                                <button className="cr-btn" onClick={() => {
+                                  if (!ex) return;
+                                  setSelectedExercise(ex);
+                                  if (a.targetReps != null) setTargetReps(a.targetReps);
+                                  if (a.targetWeightKg != null) setWeightKg(a.targetWeightKg);
+                                }}>Usar</button>
+                                <button className="cr-btn" onClick={() => {
+                                  // marcar completada: mimic AssignExercisePanel behaviour
+                                  const assignmentId = a.id;
+                                  const clientIdForEntry = a.clientId || selectedClientId || null;
+                                  const reps = a.targetReps || 0;
+                                  const series = a.targetSeries || 1;
+                                  const weight = a.targetWeightKg != null ? Number(a.targetWeightKg) : 0;
+                                  const newEntries = Array.from({ length: Math.max(1, series) }).map(() => ({
+                                    id: Date.now() + Math.floor(Math.random() * 1000),
+                                    exerciseId: a.exerciseId,
+                                    exerciseLabel: (allExercises.find((e) => e.id === a.exerciseId) || {}).label || a.exerciseId,
+                                    reps,
+                                    weightKg: weight,
+                                    volume: (weight || 0) * reps,
+                                    clientId: clientIdForEntry,
+                                    date: new Date(),
+                                  }));
+                                  setSessionHistory((prev) => [...newEntries, ...prev].slice(0, 100));
+                                  setSeriesCount((prev) => prev + Math.max(1, series));
+                                  setExerciseAssignments((prev) => {
+                                    const updated = prev.map((x) => (x.id === assignmentId ? { ...x, activo: false } : x));
+                                    try { localStorage.setItem(ASSIGNMENTS_KEY, JSON.stringify(updated)); } catch (e) { console.warn('No se pudo guardar asignaciones', e); }
+                                    return updated;
+                                  });
+                                }}>Marcar completada</button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+                {/* Debug: raw assignments JSON for the selected client */}
+                <div style={{ marginTop: 8, fontSize: 12 }}>
+                  <button className="cr-btn" onClick={() => setShowAssignmentDebug((s) => !s)}>{showAssignmentDebug ? 'Ocultar debug' : 'Mostrar debug asignaciones'}</button>
+                  {showAssignmentDebug && (
+                    <pre style={{ marginTop: 8, padding: 8, background: '#0f1724', color: '#e6eef8', borderRadius: 6, maxHeight: 240, overflow: 'auto' }}>
+                      {JSON.stringify(clientAssignmentsForSelected, null, 2)}
+                    </pre>
+                  )}
+                </div>
+              </div>
+            )}
+        {showAssignmentsTable && (
+          <div className="cr-modal-backdrop" onClick={() => setShowAssignmentsTable(false)}>
+            <div className="cr-modal" style={{ maxWidth: 860 }} onClick={(e) => e.stopPropagation()}>
+              <div className="cr-modal-header">
+                <h3>Asignaciones y realizaciones de {(() => {
+                  const c = clients.find((x) => x.id === selectedClientId);
+                  return c ? c.nombre : selectedClientId;
+                })()}</h3>
+                <button type="button" className="cr-modal-close" onClick={() => setShowAssignmentsTable(false)}>✕</button>
+              </div>
+              <div className="cr-modal-body">
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr style={{ textAlign: 'left', borderBottom: '1px solid #e5e7eb' }}>
+                      <th style={{ padding: 8 }}>Ejercicio</th>
+                      <th style={{ padding: 8 }}>Asignación (series × reps × kg)</th>
+                      <th style={{ padding: 8 }}>Estado</th>
+                      <th style={{ padding: 8 }}>Realizaciones (fecha / hora)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {exerciseAssignments.filter((a) => a.clientId === selectedClientId).map((a) => {
+                      const ex = [...BASE_EXERCISES, ...customExercises].find((e) => e.id === a.exerciseId) || { label: a.exerciseId };
+                      const completions = sessionHistory.filter((h) => (h.clientId || null) === selectedClientId && h.exerciseId === a.exerciseId);
+                      return (
+                        <tr key={a.id} style={{ borderBottom: '1px solid #f3f4f6' }}>
+                          <td style={{ padding: 8, verticalAlign: 'top' }}>
+                            <div style={{ fontWeight: 700 }}>{ex.label}</div>
+                            <div style={{ fontSize: 12, color: '#6b7280' }}>{a.nota}</div>
+                          </td>
+                          <td style={{ padding: 8, verticalAlign: 'top' }}>{(a.targetSeries || '-') + ' × ' + (a.targetReps || '-') + ' × ' + (a.targetWeightKg != null ? a.targetWeightKg + 'kg' : '-')}</td>
+                          <td style={{ padding: 8, verticalAlign: 'top' }}>{a.activo ? 'Activo' : 'Completada / Inactiva'}</td>
+                          <td style={{ padding: 8, verticalAlign: 'top' }}>
+                            {completions.length === 0 ? (
+                              <span style={{ color: '#9ca3af' }}>Sin registros</span>
+                            ) : (
+                              <ul style={{ margin: 0, paddingLeft: 14 }}>
+                                {completions.map((c) => (
+                                  <li key={c.id} style={{ marginBottom: 4 }}>{(c.date instanceof Date) ? c.date.toLocaleString() : new Date(c.date).toLocaleString()}</li>
+                                ))}
+                              </ul>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
-
-            <ExerciseSelector
-              exercises={allExercises}
-              selectedExercise={selectedExercise}
-              onChange={handleExerciseChange}
-              onOpenAddExercise={() => setShowAddExerciseModal(true)}
-              disableAdd={isPatientPublicView}
-            />
+          </div>
+        )}
 
             
 
-            <CounterPanel
-              selectedExercise={selectedExercise}
-              currentReps={currentReps}
-              targetReps={targetReps}
-              weightKg={weightKg}
-              seriesCount={seriesCount}
-              onIncrement={increment}
-              onDecrement={decrement}
-              onResetReps={resetReps}
-              onChangeTargetReps={setTargetReps}
-              onChangeWeight={setWeightKg}
-              onFinishSeries={handleFinishSeries}
-              onAddMultiple={addMultipleReps}
-              onOpenTabata={() => setShowTabataModal(true)}
-            />
+            {isPatientPublicView && (
+              <CounterPanel
+                selectedExercise={assignedExerciseForCounter}
+                currentReps={currentReps}
+                targetReps={targetReps}
+                weightKg={weightKg}
+                seriesCount={seriesCount}
+                onIncrement={increment}
+                onDecrement={decrement}
+                onResetReps={resetReps}
+                onChangeTargetReps={setTargetReps}
+                onChangeWeight={setWeightKg}
+                onFinishSeries={handleFinishSeries}
+                onAddMultiple={addMultipleReps}
+                onOpenTabata={() => setShowTabataModal(true)}
+              />
+            )}
           </div>
 
           {/* COLUMNA DERECHA */}
@@ -681,6 +900,48 @@ export default function ContadorReps() {
                   setSelectedExercise(exercise);
                   if (opts.targetReps != null) setTargetReps(opts.targetReps);
                   if (opts.targetWeightKg != null) setWeightKg(opts.targetWeightKg);
+                  setShowAssignModal(false);
+                }}
+                onCompleteAssignment={(assignmentId) => {
+                  const a = exerciseAssignments.find((x) => x.id === assignmentId);
+                  if (!a) return;
+                  // determine client for the assignment
+                  const clientIdForEntry = a.clientId || selectedClientId || null;
+                  const reps = a.targetReps || 0;
+                  const series = a.targetSeries || 1;
+                  const weight = a.targetWeightKg != null ? Number(a.targetWeightKg) : 0;
+
+                  // create one entry per series (mirror handleFinishSeries behavior)
+                  const newEntries = Array.from({ length: Math.max(1, series) }).map(() => ({
+                    id: Date.now() + Math.floor(Math.random() * 1000),
+                    exerciseId: a.exerciseId,
+                    exerciseLabel: (allExercises.find((e) => e.id === a.exerciseId) || {}).label || a.exerciseId,
+                    reps,
+                    weightKg: weight,
+                    volume: (weight || 0) * reps,
+                    clientId: clientIdForEntry,
+                    date: new Date(),
+                  }));
+
+                  setSessionHistory((prev) => {
+                    const updated = [...newEntries, ...prev].slice(0, 100);
+                    return updated;
+                  });
+
+                  // increment seriesCount by the number of series
+                  setSeriesCount((prev) => prev + Math.max(1, series));
+
+                  // mark assignment inactive and persist
+                  setExerciseAssignments((prev) => {
+                    const updated = prev.map((x) => (x.id === assignmentId ? { ...x, activo: false } : x));
+                    try {
+                      localStorage.setItem(ASSIGNMENTS_KEY, JSON.stringify(updated));
+                    } catch (e) {
+                      console.warn("No se pudo guardar asignaciones", e);
+                    }
+                    return updated;
+                  });
+
                   setShowAssignModal(false);
                 }}
               />

@@ -203,6 +203,41 @@
   color: #111827;
 }
 
+/* Batch preview styles */
+.cr-batch-list {
+  margin-top: 8px;
+  padding: 8px;
+  border: 1px dashed #e5e7eb;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.cr-batch-list h5 {
+  margin: 0 0 8px 0;
+  font-size: 0.88rem;
+  color: #374151;
+}
+
+.cr-batch-list ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cr-batch-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  border-radius: 8px;
+  background: #f9fafb;
+  border: 1px solid #eef2f7;
+}
+
 /* UL / LI */
 .cr-assign-list ul {
   list-style: none;

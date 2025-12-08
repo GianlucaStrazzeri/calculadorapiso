@@ -177,7 +177,9 @@ export default function ViviendaDashboard() {
         <div>
           <div>{recomendacion}</div>
           <div style={{ marginTop: 8, color: '#6b7280' }}>
-            Nota: reglas simples aplicadas — ROI > {roiThreshold}% y cashflow ≤ 0 → vender. Cashflow &gt; 0 y rentabilidad bruta ≥ 3% → alquilar.
+            {"Nota: reglas simples aplicadas — ROI > "}
+            {roiThreshold}
+            {"% y cashflow <= 0 → vender. Cashflow > 0 y rentabilidad bruta >= 3% → alquilar."}
           </div>
         </div>
       </div>

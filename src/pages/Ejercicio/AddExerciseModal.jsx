@@ -4,7 +4,20 @@
 import React, { useState, useEffect } from "react";
 import { EXERCISE_TYPES } from "./exercisesConfig";
 import { DEFAULT_AREAS, DEFAULT_EQUIPMENT, DEFAULT_GOALS } from "./filtersConfig";
+import './AddExerciseModal.css';
 
+/**
+ * AddExerciseModal
+ * - Muestra un modal para crear un nuevo ejercicio con metadatos opcionales.
+ * - Props:
+ *    `isOpen` (boolean): controla la visibilidad del modal.
+ *    `onClose` (function): callback al cerrar el modal.
+ *    `onAddExercise` (function): callback con el objeto ejercicio al enviar el formulario.
+ *
+ * Internamente contiene helpers:
+ *  - `slugify(text)`: genera un id a partir del nombre.
+ *  - `handleSubmit(e)`: valida y compone el objeto `newExercise`, luego llama a `onAddExercise`.
+ */
 export default function AddExerciseModal({ isOpen, onClose, onAddExercise }) {
   const [label, setLabel] = useState("");
   const [type, setType] = useState(EXERCISE_TYPES.BODYWEIGHT);
@@ -37,6 +50,7 @@ export default function AddExerciseModal({ isOpen, onClose, onAddExercise }) {
 
   if (!isOpen) return null;
 
+  // Genera un id legible a partir del label
   function slugify(text) {
     return text
       .toLowerCase()
@@ -45,6 +59,7 @@ export default function AddExerciseModal({ isOpen, onClose, onAddExercise }) {
       .replace(/^_+|_+$/g, "");
   }
 
+  // Maneja el envío del formulario: compone el objeto ejercicio y lo entrega al callback
   function handleSubmit(e) {
     e.preventDefault();
     if (!label.trim()) return;
@@ -60,12 +75,10 @@ export default function AddExerciseModal({ isOpen, onClose, onAddExercise }) {
       description:
         description.trim() ||
         "Ejercicio personalizado añadido por el usuario.",
-      // campos opcionales para medios
       mediaType: mediaType === "none" ? undefined : mediaType,
       mediaUrl: mediaType === "none" || !mediaUrl.trim() ? undefined : mediaUrl.trim(),
     };
 
-    // attach optional metadata if present
     if (equipment && equipment.length > 0) newExercise.equipment = equipment;
     if (goal && goal.length > 0) newExercise.goal = goal;
     if (area) newExercise.area = area;
@@ -74,211 +87,93 @@ export default function AddExerciseModal({ isOpen, onClose, onAddExercise }) {
     onAddExercise(newExercise);
   }
 
-  const overlayStyle = {
-    position: "fixed",
-    inset: 0,
-    background: "rgba(15,23,42,0.65)",
-    display: "flex",
-    alignItems: "flex-start",
-    justifyContent: "center",
-    padding: "32px 12px",
-    zIndex: 50,
-  };
-
-  const modalStyle = {
-    width: "100%",
-    maxWidth: 720,
-    background: "#ffffff",
-    borderRadius: 12,
-    padding: "1rem 1.25rem",
-    boxShadow: "0 20px 45px rgba(15,23,42,0.4)",
-    color: "#0f172a",
-    // make modal vertically scrollable when content exceeds viewport
-    maxHeight: "calc(100vh - 64px)",
-    overflowY: "auto",
-  };
-
-  const titleStyle = {
-    fontSize: "1.1rem",
-    fontWeight: 700,
-    marginBottom: "0.5rem",
-  };
-
-  const labelStyle = {
-    fontSize: "0.8rem",
-    fontWeight: 600,
-    marginBottom: 4,
-    color: "#64748b",
-  };
-
-  const inputStyle = {
-    width: "100%",
-    padding: "0.4rem 0.55rem",
-    borderRadius: 8,
-    border: "1px solid #cbd5e1",
-    fontSize: "0.85rem",
-    marginBottom: 8,
-  };
-
-  const textareaStyle = {
-    ...inputStyle,
-    minHeight: 60,
-    resize: "vertical",
-  };
-
-  const rowStyle = {
-    display: "flex",
-    gap: 8,
-    marginBottom: 8,
-  };
-
   return (
-    <div style={overlayStyle}>
-      <div style={modalStyle}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-          <h2 style={titleStyle}>Añadir nuevo ejercicio</h2>
-          <button
-            type="button"
-            onClick={onClose}
-            style={{
-              border: "none",
-              background: "transparent",
-              cursor: "pointer",
-              fontSize: "1.1rem",
-              lineHeight: 1,
-            }}
-          >
-            ✕
-          </button>
+    <div className="aem-overlay">
+      <div className="aem-modal">
+        <div className="aem-header">
+          <h2 className="aem-title">Añadir nuevo ejercicio</h2>
+          <button type="button" onClick={onClose} className="aem-close-btn">✕</button>
         </div>
 
         <form onSubmit={handleSubmit}>
           <div>
-            <label style={labelStyle}>Nombre del ejercicio</label>
+            <label className="aem-label">Nombre del ejercicio</label>
             <input
               type="text"
               value={label}
               onChange={(e) => setLabel(e.target.value)}
               placeholder="Ej. Sentadilla goblet a cajón"
-              style={inputStyle}
+              className="aem-input"
             />
           </div>
 
-          <div style={rowStyle}>
+          <div className="aem-row">
             <div style={{ flex: 1 }}>
-              <label style={labelStyle}>Tipo</label>
-              <select
-                value={type}
-                onChange={(e) => setType(e.target.value)}
-                style={inputStyle}
-              >
+              <label className="aem-label">Tipo</label>
+              <select value={type} onChange={(e) => setType(e.target.value)} className="aem-input">
                 <option value={EXERCISE_TYPES.BODYWEIGHT}>Peso corporal</option>
                 <option value={EXERCISE_TYPES.WEIGHTED}>Con peso / máquina</option>
               </select>
             </div>
-            <div style={{ width: 80 }}>
-              <label style={labelStyle}>Emoji</label>
-              <input
-                type="text"
-                maxLength={4}
-                value={emoji}
-                onChange={(e) => setEmoji(e.target.value)}
-                style={inputStyle}
-              />
+            <div className="aem-col-80">
+              <label className="aem-label">Emoji</label>
+              <input type="text" maxLength={4} value={emoji} onChange={(e) => setEmoji(e.target.value)} className="aem-input" />
             </div>
-            <div style={{ width: 80 }}>
-              <label style={labelStyle}>Color</label>
-              <input
-                type="color"
-                value={color}
-                onChange={(e) => setColor(e.target.value)}
-                style={{ ...inputStyle, padding: 0, height: 34 }}
-              />
+            <div className="aem-col-80">
+              <label className="aem-label">Color</label>
+              <input type="color" value={color} onChange={(e) => setColor(e.target.value)} className="aem-color-input" />
             </div>
           </div>
 
           <div>
-            <label style={labelStyle}>Descripción</label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Breve explicación del objetivo, musculatura principal, etc."
-              style={textareaStyle}
-            />
+            <label className="aem-label">Descripción</label>
+            <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Breve explicación del objetivo, musculatura principal, etc." className="aem-textarea" />
           </div>
 
-          <div style={{ marginTop: 4, marginBottom: 8 }}>
-            <label style={labelStyle}>Imagen o vídeo de referencia (opcional)</label>
-            <div style={rowStyle}>
-              <select
-                value={mediaType}
-                onChange={(e) => setMediaType(e.target.value)}
-                style={{ ...inputStyle, flex: 0.45 }}
-              >
+          <div className="aem-section">
+            <label className="aem-label">Imagen o vídeo de referencia (opcional)</label>
+            <div className="aem-row">
+              <select value={mediaType} onChange={(e) => setMediaType(e.target.value)} className="aem-input aem-media-select">
                 <option value="none">Sin medio</option>
                 <option value="image">Imagen (URL)</option>
                 <option value="video">Vídeo (URL)</option>
               </select>
-              <input
-                type="url"
-                value={mediaUrl}
-                onChange={(e) => setMediaUrl(e.target.value)}
-                placeholder="https://... (YouTube, imagen, etc.)"
-                style={{ ...inputStyle, flex: 1 }}
-              />
+              <input type="url" value={mediaUrl} onChange={(e) => setMediaUrl(e.target.value)} placeholder="https://... (YouTube, imagen, etc.)" className="aem-input aem-media-url" />
             </div>
             {mediaType === "image" && mediaUrl && (
-              <div style={{ marginBottom: 8 }}>
-                <img
-                  src={mediaUrl}
-                  alt="Vista previa"
-                  style={{ maxWidth: "100%", maxHeight: 140, borderRadius: 8 }}
-                />
+              <div className="aem-media-preview aem-media-image">
+                <img src={mediaUrl} alt="Vista previa" />
               </div>
             )}
             {mediaType === "video" && mediaUrl && (
-              <div style={{ marginBottom: 8 }}>
-                <video
-                  src={mediaUrl}
-                  controls
-                  style={{ maxWidth: "100%", maxHeight: 180, borderRadius: 8 }}
-                />
+              <div className="aem-media-preview aem-media-video">
+                <video src={mediaUrl} controls />
               </div>
             )}
           </div>
 
-          <div style={{ marginTop: 8, marginBottom: 8 }}>
-            <label style={labelStyle}>Equipamiento (selecciona varios con Ctrl/Cmd)</label>
-            <select
-              multiple
-              value={equipment}
-              onChange={(e) => setEquipment(Array.from(e.target.selectedOptions, (o) => o.value))}
-              style={{ ...inputStyle, height: 110 }}
-            >
+          <div className="aem-section">
+            <label className="aem-label">Equipamiento (selecciona varios con Ctrl/Cmd)</label>
+            <select multiple value={equipment} onChange={(e) => setEquipment(Array.from(e.target.selectedOptions, (o) => o.value))} className="aem-input aem-select-multiple">
               {DEFAULT_EQUIPMENT.map((eq) => (
                 <option key={eq} value={eq}>{eq}</option>
               ))}
             </select>
           </div>
 
-          <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+          <div className="aem-row">
             <div style={{ flex: 1 }}>
-              <label style={labelStyle}>Objetivo (puedes seleccionar varios)</label>
-              <select
-                multiple
-                value={goal}
-                onChange={(e) => setGoal(Array.from(e.target.selectedOptions, (o) => o.value))}
-                style={{ ...inputStyle, height: 110 }}
-              >
+              <label className="aem-label">Objetivo (puedes seleccionar varios)</label>
+              <select multiple value={goal} onChange={(e) => setGoal(Array.from(e.target.selectedOptions, (o) => o.value))} className="aem-input aem-select-multiple">
                 {DEFAULT_GOALS.map((g) => (
                   <option key={g} value={g}>{g}</option>
                 ))}
               </select>
             </div>
 
-            <div style={{ width: 220 }}>
-              <label style={labelStyle}>Zona principal</label>
-              <select value={area} onChange={(e) => setArea(e.target.value)} style={inputStyle}>
+            <div className="aem-col-220">
+              <label className="aem-label">Zona principal</label>
+              <select value={area} onChange={(e) => setArea(e.target.value)} className="aem-input">
                 <option value="">(ninguna)</option>
                 {DEFAULT_AREAS.map((a) => (
                   <option key={a} value={a}>{a}</option>
@@ -287,52 +182,18 @@ export default function AddExerciseModal({ isOpen, onClose, onAddExercise }) {
             </div>
           </div>
 
-          <div style={{ marginBottom: 8 }}>
-            <label style={labelStyle}>Nivel</label>
-            <select value={level} onChange={(e) => setLevel(e.target.value)} style={inputStyle}>
+          <div className="aem-section">
+            <label className="aem-label">Nivel</label>
+            <select value={level} onChange={(e) => setLevel(e.target.value)} className="aem-input">
               <option value="inicial">Inicial</option>
               <option value="medio">Medio</option>
               <option value="avanzado">Avanzado</option>
             </select>
           </div>
 
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "flex-end",
-              gap: 8,
-              marginTop: 4,
-            }}
-          >
-            <button
-              type="button"
-              onClick={onClose}
-              style={{
-                padding: "0.4rem 0.8rem",
-                borderRadius: 999,
-                border: "1px solid #cbd5e1",
-                background: "#ffffff",
-                fontSize: "0.85rem",
-                cursor: "pointer",
-              }}
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              style={{
-                padding: "0.4rem 0.9rem",
-                borderRadius: 999,
-                border: "none",
-                background: "#22c55e",
-                color: "#0f172a",
-                fontWeight: 600,
-                fontSize: "0.9rem",
-                cursor: "pointer",
-              }}
-            >
-              Guardar ejercicio
-            </button>
+          <div className="aem-actions">
+            <button type="button" onClick={onClose} className="aem-btn aem-btn-cancel">Cancelar</button>
+            <button type="submit" className="aem-btn aem-btn-save">Guardar ejercicio</button>
           </div>
         </form>
       </div>

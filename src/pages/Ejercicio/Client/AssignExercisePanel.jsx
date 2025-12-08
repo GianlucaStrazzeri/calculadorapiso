@@ -1,7 +1,8 @@
 // AssignExercisePanel.jsx
 import React, { useMemo, useState } from "react";
 import "./AssignExercisePanel.css";
-import VideoPreview from "../Ejercicio/VideoPreview";
+import VideoPreview from "../VideoPreview";
+import FeedbackForm from "../FeedbackForm";
 
 export function AssignExercisePanel({
   selectedClientId,
@@ -11,12 +12,16 @@ export function AssignExercisePanel({
   onCreateAssignment,
   onToggleActive,
   onSelectForSession,
+  onCompleteAssignment,
 }) {
   const [selectedExerciseId, setSelectedExerciseId] = useState("");
   const [targetReps, setTargetReps] = useState("");
   const [targetSeries, setTargetSeries] = useState("");
   const [targetWeightKg, setTargetWeightKg] = useState("");
   const [nota, setNota] = useState("");
+  // batch (temp) to collect multiple assignments before persisting
+  const [batch, setBatch] = useState([]);
+  const [showFeedback, setShowFeedback] = useState(false);
 
   const client = useMemo(
     () => clients.find((c) => c.id === selectedClientId) || null,
@@ -65,6 +70,48 @@ export function AssignExercisePanel({
     setTargetSeries("");
     setTargetWeightKg("");
     setNota("");
+  };
+
+  const handleAddToBatch = (e) => {
+    e.preventDefault();
+    if (!selectedExerciseId) return;
+    const item = {
+      id: `batch_${Date.now()}_${Math.floor(Math.random()*999)}`,
+      exerciseId: selectedExerciseId,
+      targetReps: targetReps ? Number(targetReps) : null,
+      targetSeries: targetSeries ? Number(targetSeries) : null,
+      targetWeightKg: targetWeightKg ? Number(targetWeightKg) : null,
+      nota: nota.trim() || "",
+    };
+    setBatch((prev) => [...prev, item]);
+    setSelectedExerciseId("");
+    setTargetReps("");
+    setTargetSeries("");
+    setTargetWeightKg("");
+    setNota("");
+  };
+
+  const handleAssignBatch = () => {
+    if (!batch || batch.length === 0) return;
+    batch.forEach((b) => {
+      const id = `asig_${Date.now()}_${Math.floor(Math.random()*999)}`;
+      onCreateAssignment({
+        id,
+        clientId: client.id,
+        exerciseId: b.exerciseId,
+        targetReps: b.targetReps,
+        targetSeries: b.targetSeries,
+        targetWeightKg: b.targetWeightKg,
+        nota: b.nota,
+        activo: true,
+        createdAt: new Date().toISOString(),
+      });
+    });
+    setBatch([]);
+  };
+
+  const handleRemoveBatch = (batchId) => {
+    setBatch((prev) => prev.filter((b) => b.id !== batchId));
   };
 
   const getExercise = (id) => exercises.find((e) => e.id === id);
@@ -142,15 +189,51 @@ export function AssignExercisePanel({
           />
         </label>
 
-        <div className="cr-assign-actions">
+        <div className="cr-assign-actions" style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           <button type="submit" className="cr-btn cr-btn-primary">
             Asignar ejercicio
           </button>
+          <button type="button" className="cr-btn" onClick={handleAddToBatch}>
+            ➕ Añadir a lote
+          </button>
+          <button type="button" className="cr-btn cr-btn-secondary" onClick={() => setShowFeedback(true)}>
+            Feedback
+          </button>
+          {batch.length > 0 && (
+            <button type="button" className="cr-btn cr-btn-primary" onClick={handleAssignBatch} style={{ marginLeft: 'auto' }}>
+              Asignar lote ({batch.length})
+            </button>
+          )}
         </div>
       </form>
 
       <div className="cr-assign-list">
         <h4>Ejercicios asignados</h4>
+        {/* Batch preview */}
+        {batch.length > 0 && (
+          <div className="cr-batch-list">
+            <h5>Por asignar ({batch.length})</h5>
+            <ul>
+              {batch.map((b) => {
+                const ex = getExercise(b.exerciseId) || { label: b.exerciseId };
+                return (
+                  <li key={b.id} className="cr-batch-item">
+                    <div>
+                      <strong>{ex.label}</strong>
+                      <div style={{ fontSize: 12, color: '#6b7280' }}>
+                        {(b.targetSeries ? b.targetSeries + ' series · ' : '') + (b.targetReps ? b.targetReps + ' reps · ' : '') + (b.targetWeightKg != null ? b.targetWeightKg + ' kg' : '')}
+                        {b.nota ? ` · ${b.nota}` : ''}
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button className="cr-btn cr-btn-ghost" onClick={() => handleRemoveBatch(b.id)}>Eliminar</button>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        )}
         {clientAssignments.length === 0 ? (
           <p className="cr-muted">
             Todavía no has asignado ejercicios a este cliente.
@@ -201,6 +284,13 @@ export function AssignExercisePanel({
                     <button
                       type="button"
                       className="cr-btn cr-btn-secondary"
+                      onClick={() => onCompleteAssignment && onCompleteAssignment(a.id)}
+                    >
+                      Marcar completada
+                    </button>
+                    <button
+                      type="button"
+                      className="cr-btn cr-btn-secondary"
                       onClick={() =>
                         onSelectForSession(a.exerciseId, {
                           targetReps: a.targetReps,
@@ -215,6 +305,20 @@ export function AssignExercisePanel({
               );
             })}
           </ul>
+        )}
+        {/* Feedback modal (opened from the Assign panel) */}
+        {showFeedback && (
+          <div className="cr-modal-backdrop" onClick={() => setShowFeedback(false)}>
+            <div className="cr-modal" style={{ maxWidth: 720 }} onClick={(e) => e.stopPropagation()}>
+              <div className="cr-modal-header">
+                <h3>Feedback</h3>
+                <button type="button" className="cr-modal-close" onClick={() => setShowFeedback(false)}>✕</button>
+              </div>
+              <div className="cr-modal-body">
+                <FeedbackForm sessionId={null} onClose={() => setShowFeedback(false)} onSaved={() => { /* no-op for now */ }} />
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>

@@ -30,6 +30,14 @@ function DecisionVivienda() {
   const [precioVentaManual, setPrecioVentaManual] = useState(0);
   const [alquilerPosible, setAlquilerPosible] = useState(0);
   const [tipoHipoteca, setTipoHipoteca] = useState('variable');
+  // Extra inputs used in the "Mercado del alquiler" modal
+  const [comunidadMercado, setComunidadMercado] = useState(Number(comunidad) || 0);
+  const [ibiAnualMercado, setIbiAnualMercado] = useState(Number(ibiBasura) || 0);
+  const [basuraAnualMercado, setBasuraAnualMercado] = useState(0);
+  const [seguroAnualMercado, setSeguroAnualMercado] = useState(0);
+  const [perdidaDeduccionesAnualMercado, setPerdidaDeduccionesAnualMercado] = useState(3000);
+  const [intereses3AniosMercado, setIntereses3AniosMercado] = useState(0);
+  const [useSimulatedInteresesMercado, setUseSimulatedInteresesMercado] = useState(true);
 
   // Derived simple values
   const importeFinanciado = Math.max((Number(precioCompra) || 0) - (Number(entrada) || 0), 0);
@@ -554,8 +562,44 @@ function DecisionVivienda() {
   )?.año;
 
   // ---- ESCENARIO ALQUILAR TU PROPIA VIVIENDA DESDE EL MINUTO 1 ----
-  const alquilerEquilibrio =
-    cuotaMensual + gastosAnualesVivienda / 12; // alquiler mínimo para cubrir hipoteca + gastos fijos
+  // compute interests paid in the first 3 years (36 months) for use in the mercado modal
+  const interesesPagadosPrimeros3AniosMV = useMemo(() => {
+    const P = Math.max(0, importeFinanciado || 0);
+    const nTotal = Math.max(1, Number(añosHipoteca || 0)) * 12;
+    const meses = Math.min(nTotal, 36);
+    const r = fixedMonthlyRate || 0; // using fixedMonthlyRate as representative
+    let saldo = P;
+    let interesesAcum = 0;
+    const cuota = cuotaMensual;
+    for (let m = 0; m < meses && saldo > 0; m++) {
+      const interesMes = saldo * r;
+      const amortizacion = cuota - interesMes;
+      if (!isFinite(amortizacion)) break;
+      saldo = Math.max(0, saldo - amortizacion);
+      interesesAcum += interesMes;
+    }
+    return interesesAcum;
+  }, [importeFinanciado, añosHipoteca, fixedMonthlyRate, cuotaMensual]);
+
+  // Aggregate monthly extras per user's requested items
+  const gastosMensualesMercado = useMemo(() => {
+    const cuota = Number(cuotaMensual || 0);
+    const comunidadM = Number(comunidadMercado || 0);
+    const ibi = Number(ibiAnualMercado || 0) / 12;
+    const basura = Number(basuraAnualMercado || 0) / 12;
+    const seguro = Number(seguroAnualMercado || 0) / 12;
+    const perdidaDeduccionesMensual = Number(perdidaDeduccionesAnualMercado || 0) / 12;
+    const interesesTotal = useSimulatedInteresesMercado ? Number(interesesPagadosPrimeros3AniosMV || 0) : Number(intereses3AniosMercado || 0);
+    // spread intereses 3 años over 36 months
+    const interesesMensual = interesesTotal / 36;
+    return cuota + comunidadM + ibi + basura + seguro + perdidaDeduccionesMensual + interesesMensual;
+  }, [cuotaMensual, comunidadMercado, ibiAnualMercado, basuraAnualMercado, seguroAnualMercado, perdidaDeduccionesAnualMercado, intereses3AniosMercado, useSimulatedInteresesMercado, interesesPagadosPrimeros3AniosMV]);
+
+  // Gross rent needed to cover the monthly costs after accounting for 21% tax on rent
+  const alquilerEquilibrio = useMemo(() => {
+    const netFactor = Math.max(0.01, 1 - 0.21);
+    return gastosMensualesMercado / netFactor;
+  }, [gastosMensualesMercado]);
 
   // Alquiler necesario para tener una rentabilidad anual del 3% y 5% sobre el efectivo invertido
   const alquilerPara3Porciento =
@@ -2219,6 +2263,32 @@ function DecisionVivienda() {
                       <span style={labelMini}>Alquiler que crees que podrías cobrar por TU vivienda</span>
                       <input type="number" value={alquilerPosible} onChange={(e) => setAlquilerPosible(Number(e.target.value))} min={0} style={{ ...inputStyle, marginTop: "4px" }} />
                       <span style={{ fontSize: "0.8rem", color: "#9ca3af" }}>Este dato viene del mercado del alquiler de la zona (ideal: portales inmobiliarios, comparables, etc.).</span>
+                    </div>
+
+                    <div style={{ ...cardMini, padding: 12 }}>
+                      <strong style={{ display: 'block', marginBottom: 8 }}>Ajustes para cálculo (Mercado)</strong>
+                      <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: 6 }}>Comunidad (mensual)
+                        <input type="number" value={comunidadMercado} onChange={(e) => setComunidadMercado(Number(e.target.value))} style={{ ...inputStyle, marginTop: 4 }} />
+                      </label>
+                      <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: 6 }}>IBI anual
+                        <input type="number" value={ibiAnualMercado} onChange={(e) => setIbiAnualMercado(Number(e.target.value))} style={{ ...inputStyle, marginTop: 4 }} />
+                      </label>
+                      <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: 6 }}>Basura anual
+                        <input type="number" value={basuraAnualMercado} onChange={(e) => setBasuraAnualMercado(Number(e.target.value))} style={{ ...inputStyle, marginTop: 4 }} />
+                      </label>
+                      <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: 6 }}>Seguro anual
+                        <input type="number" value={seguroAnualMercado} onChange={(e) => setSeguroAnualMercado(Number(e.target.value))} style={{ ...inputStyle, marginTop: 4 }} />
+                      </label>
+                      <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: 6 }}>Pérdida de deducciones (anual)
+                        <input type="number" value={perdidaDeduccionesAnualMercado} onChange={(e) => setPerdidaDeduccionesAnualMercado(Number(e.target.value))} style={{ ...inputStyle, marginTop: 4 }} />
+                      </label>
+                      <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: 6 }}>Intereses (3 años) — total
+                        <input type="number" value={intereses3AniosMercado} onChange={(e) => setIntereses3AniosMercado(Number(e.target.value))} style={{ ...inputStyle, marginTop: 4 }} />
+                      </label>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6 }}>
+                        <input type="checkbox" checked={useSimulatedInteresesMercado} onChange={(e) => setUseSimulatedInteresesMercado(e.target.checked)} />
+                        <span style={{ fontSize: '0.85rem' }}>Usar intereses simulados de la hipoteca (primeros 3 años)</span>
+                      </label>
                     </div>
 
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "12px" }}>
