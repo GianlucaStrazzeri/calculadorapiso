@@ -87,8 +87,10 @@ export default function ContadorReps() {
   const [activeTabataConfig, setActiveTabataConfig] = useState(null);
 
   // Lista total de ejercicios (base + personalizados)
+  // Mostrar todos los ejercicios; `VideoPreview` renderiza miniatura
+  // solo cuando `videoUrl` (o `mediaUrl`) está presente.
   const allExercises = React.useMemo(
-    () => [...BASE_EXERCISES, ...customExercises].filter((e) => !!e.videoUrl),
+    () => [...BASE_EXERCISES, ...customExercises],
     [customExercises]
   );
 

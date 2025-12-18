@@ -14,6 +14,8 @@ const RAW_EXERCISES = [
     id: "flexiones",
     label: "Flexiones",
     emoji: "🤸",
+    videoTitle: "Push-up (Perfect push up, short)",
+    videoUrl: "https://www.youtube.com/shorts/ba8tr1NzwXU",
     color: "#2563eb",
     type: EXERCISE_TYPES.BODYWEIGHT,
     description:
@@ -23,6 +25,8 @@ const RAW_EXERCISES = [
     id: "flexiones_inclinadas",
     label: "Flexiones en banco inclinado",
     emoji: "📐",
+    videoTitle: "Incline push-up (short)",
+    videoUrl: "https://www.youtube.com/shorts/Mc-Kdwnx_M8",
     color: "#38bdf8",
     type: EXERCISE_TYPES.BODYWEIGHT,
     description:
@@ -32,6 +36,8 @@ const RAW_EXERCISES = [
     id: "flexiones_declive",
     label: "Flexiones en declive",
     emoji: "🧗",
+    videoTitle: "Decline push-up (short)",
+    videoUrl: "https://www.youtube.com/shorts/7a0sQBLvPT0",
     color: "#0ea5e9",
     type: EXERCISE_TYPES.BODYWEIGHT,
     description:
@@ -41,6 +47,8 @@ const RAW_EXERCISES = [
     id: "fondos",
     label: "Fondos en paralelas",
     emoji: "📥",
+    videoTitle: "Dips en paralelas (short técnica)",
+    videoUrl: "https://www.youtube.com/shorts/cvyZAIa7heU",
     color: "#f97316",
     type: EXERCISE_TYPES.BODYWEIGHT,
     description:
@@ -50,6 +58,8 @@ const RAW_EXERCISES = [
     id: "fondos_banco",
     label: "Fondos en banco",
     emoji: "🪑",
+    videoTitle: "Bench dip (tutorial)",
+    videoUrl: "https://www.youtube.com/watch?v=c3ZGl4pAwZ4",
     color: "#fb923c",
     type: EXERCISE_TYPES.BODYWEIGHT,
     description:
@@ -59,6 +69,8 @@ const RAW_EXERCISES = [
     id: "press_banca",
     label: "Press banca con barra",
     emoji: "🏋️",
+    videoTitle: "Bench press (short técnica)",
+    videoUrl: "https://www.youtube.com/shorts/0cXAp6WhSj4",
     color: "#a855f7",
     type: EXERCISE_TYPES.WEIGHTED,
     description:
@@ -68,6 +80,8 @@ const RAW_EXERCISES = [
     id: "press_banca_mancuernas",
     label: "Press banca con mancuernas",
     emoji: "🏋️",
+    videoTitle: "Dumbbell Bench Press (short técnica)",
+    videoUrl: "https://www.youtube.com/shorts/6xZ0JjzQ0Y8",
     color: "#c4b5fd",
     type: EXERCISE_TYPES.WEIGHTED,
     description:
@@ -77,6 +91,8 @@ const RAW_EXERCISES = [
     id: "press_inclinado_mancuernas",
     label: "Press inclinado con mancuernas",
     emoji: "📈",
+    videoTitle: "Incline Dumbbell Press (short)",
+    videoUrl: "https://www.youtube.com/shorts/LfyQBUKR8SE",
     color: "#8b5cf6",
     type: EXERCISE_TYPES.WEIGHTED,
     description:
@@ -86,6 +102,8 @@ const RAW_EXERCISES = [
     id: "press_militar_barra",
     label: "Press militar con barra",
     emoji: "🎯",
+    videoTitle: "Overhead press con barra (short técnica)",
+    videoUrl: "https://www.youtube.com/shorts/4LBVP2Oe7fg",
     color: "#6366f1",
     type: EXERCISE_TYPES.WEIGHTED,
     description:
@@ -95,6 +113,8 @@ const RAW_EXERCISES = [
     id: "press_mancuernas_sentado",
     label: "Press hombro con mancuernas sentado",
     emoji: "💺",
+    videoTitle: "Seated Dumbbell Shoulder Press (short)",
+    videoUrl: "https://www.youtube.com/shorts/qEwKCR5JCog",
     color: "#4f46e5",
     type: EXERCISE_TYPES.WEIGHTED,
     description:
@@ -114,6 +134,8 @@ const RAW_EXERCISES = [
     id: "cruces_polea",
     label: "Cruces en polea",
     emoji: "🎛️",
+    videoTitle: "Cable crossover / fly (short)",
+    videoUrl: "https://www.youtube.com/shorts/Jokaz7dBJNg",
     color: "#fb7185",
     type: EXERCISE_TYPES.WEIGHTED,
     description:
@@ -137,6 +159,8 @@ const RAW_EXERCISES = [
     id: "dominadas_asistidas",
     label: "Dominadas asistidas (banda o máquina)",
     emoji: "🧵",
+    videoTitle: "Assisted pull-up machine (short)",
+    videoUrl: "https://www.youtube.com/shorts/PtK7x27mLUY",
     color: "#16a34a",
     type: EXERCISE_TYPES.WEIGHTED,
     description:
@@ -146,6 +170,8 @@ const RAW_EXERCISES = [
     id: "jalon_polea_agarre_estrecho",
     label: "Jalón al pecho agarre estrecho",
     emoji: "🎣",
+    videoTitle: "Close-grip lat pulldown (short)",
+    videoUrl: "https://www.youtube.com/shorts/GSgy468OxAs",
     color: "#22c55e",
     type: EXERCISE_TYPES.WEIGHTED,
     description:
@@ -155,6 +181,8 @@ const RAW_EXERCISES = [
     id: "remo_barra",
     label: "Remo con barra inclinado",
     emoji: "📦",
+    videoTitle: "Barbell row (short técnica)",
+    videoUrl: "https://www.youtube.com/shorts/Nqh7q3zDCoQ",
     color: "#0f766e",
     type: EXERCISE_TYPES.WEIGHTED,
     description:
@@ -164,6 +192,8 @@ const RAW_EXERCISES = [
     id: "remo_mancuerna",
     label: "Remo a una mano con mancuerna",
     emoji: "📏",
+    videoTitle: "One-arm dumbbell row (short técnica)",
+    videoUrl: "https://www.youtube.com/shorts/aFtWSOruuhs",
     color: "#14b8a6",
     type: EXERCISE_TYPES.WEIGHTED,
     description:
@@ -173,6 +203,8 @@ const RAW_EXERCISES = [
     id: "remo_cable_sentado",
     label: "Remo en polea sentado",
     emoji: "🎛️",
+    videoTitle: "Seated Cable Row (short)",
+    videoUrl: "https://www.youtube.com/shorts/GZbfZ033f74",
     color: "#0ea5e9",
     type: EXERCISE_TYPES.WEIGHTED,
     description:
@@ -182,6 +214,8 @@ const RAW_EXERCISES = [
     id: "face_pull",
     label: "Face pull en polea",
     emoji: "😶‍🌫️",
+    videoTitle: "Face Pull (short técnica escapular)",
+    videoUrl: "https://www.youtube.com/shorts/rep-qVOkqgk",
     color: "#22c55e",
     type: EXERCISE_TYPES.WEIGHTED,
     description:
@@ -195,6 +229,8 @@ const RAW_EXERCISES = [
     id: "sentadilla_barra",
     label: "Sentadilla con barra",
     emoji: "🦵",
+    videoTitle: "Squat (short checklist técnica)",
+    videoUrl: "https://www.youtube.com/shorts/PPmvh7gBTi0",
     color: "#10b981",
     type: EXERCISE_TYPES.WEIGHTED,
     description:
@@ -204,6 +240,8 @@ const RAW_EXERCISES = [
     id: "sentadilla_frontal",
     label: "Sentadilla frontal con barra",
     emoji: "🤹",
+    videoTitle: "Front squat (short)",
+    videoUrl: "https://www.youtube.com/shorts/SJ97z1-YVGs",
     color: "#059669",
     type: EXERCISE_TYPES.WEIGHTED,
     description:
@@ -213,6 +251,8 @@ const RAW_EXERCISES = [
     id: "sentadilla_goblet",
     label: "Sentadilla goblet con mancuerna o kettlebell",
     emoji: "🥤",
+    videoTitle: "Goblet squat (short)",
+    videoUrl: "https://www.youtube.com/shorts/lRYBbchqxtI",
     color: "#34d399",
     type: EXERCISE_TYPES.WEIGHTED,
     description:
@@ -222,6 +262,8 @@ const RAW_EXERCISES = [
     id: "zancadas_caminando",
     label: "Zancadas caminando",
     emoji: "🚶",
+    videoTitle: "Walking lunge (short)",
+    videoUrl: "https://www.youtube.com/shorts/IRq5o3ntLIE",
     color: "#22c55e",
     type: EXERCISE_TYPES.WEIGHTED,
     description:
@@ -231,6 +273,8 @@ const RAW_EXERCISES = [
     id: "split_squat_bulgaro",
     label: "Sentadilla búlgara",
     emoji: "🇧🇬",
+    videoTitle: "Bulgarian split squat (short)",
+    videoUrl: "https://www.youtube.com/shorts/9p5e2BSvoLs",
     color: "#4ade80",
     type: EXERCISE_TYPES.WEIGHTED,
     description:
@@ -240,6 +284,8 @@ const RAW_EXERCISES = [
     id: "peso_muerto_rumano",
     label: "Peso muerto rumano",
     emoji: "⚰️",
+    videoTitle: "Romanian deadlift (RDL) short",
+    videoUrl: "https://www.youtube.com/shorts/5rIqP63yWFg",
     color: "#a3e635",
     type: EXERCISE_TYPES.WEIGHTED,
     description:
@@ -249,6 +295,8 @@ const RAW_EXERCISES = [
     id: "peso_muerto_convencional",
     label: "Peso muerto convencional",
     emoji: "⚓",
+    videoTitle: "Deadlift (short técnica)",
+    videoUrl: "https://www.youtube.com/shorts/ZaTM37cfiDs",
     color: "#65a30d",
     type: EXERCISE_TYPES.WEIGHTED,
     description:
@@ -258,6 +306,8 @@ const RAW_EXERCISES = [
     id: "hip_thrust_barra",
     label: "Hip thrust con barra",
     emoji: "🍑",
+    videoTitle: "Barbell hip thrust (short técnica)",
+    videoUrl: "https://www.youtube.com/shorts/W86oVlnLqY4",
     color: "#f97316",
     type: EXERCISE_TYPES.WEIGHTED,
     description:
@@ -267,6 +317,8 @@ const RAW_EXERCISES = [
     id: "puente_gluteo",
     label: "Puente de glúteo en suelo",
     emoji: "🛏️",
+    videoTitle: "Glute Bridge (short)",
+    videoUrl: "https://www.youtube.com/shorts/wPM8icPu6H8",
     color: "#facc15",
     type: EXERCISE_TYPES.BODYWEIGHT,
     description:
@@ -276,6 +328,8 @@ const RAW_EXERCISES = [
     id: "extensiones_cuadriceps_maquina",
     label: "Extensiones de cuádriceps en máquina",
     emoji: "🦿",
+    videoTitle: "Leg extension (short técnica)",
+    videoUrl: "https://www.youtube.com/shorts/d3d2yz7V26c",
     color: "#f59e0b",
     type: EXERCISE_TYPES.WEIGHTED,
     description:
@@ -285,6 +339,8 @@ const RAW_EXERCISES = [
     id: "curl_femoral_maquina",
     label: "Curl femoral en máquina",
     emoji: "🦵",
+    videoTitle: "Lying / Seated Leg Curl (short)",
+    videoUrl: "https://www.youtube.com/shorts/1Tq3QdYUuHs",
     color: "#eab308",
     type: EXERCISE_TYPES.WEIGHTED,
     description:
@@ -294,6 +350,8 @@ const RAW_EXERCISES = [
     id: "gemelos_de_pie",
     label: "Elevaciones de gemelos de pie",
     emoji: "🧍",
+    videoTitle: "Standing Calf Raise (short técnica)",
+    videoUrl: "https://www.youtube.com/shorts/-M4-G8p8fmc",
     color: "#f97316",
     type: EXERCISE_TYPES.WEIGHTED,
     description:
@@ -303,6 +361,8 @@ const RAW_EXERCISES = [
     id: "gemelos_sentado",
     label: "Elevaciones de gemelos sentado",
     emoji: "🪑",
+    videoTitle: "Seated Calf Raise (short)",
+    videoUrl: "https://www.youtube.com/shorts/8AMp0YvUuVo",
     color: "#fb923c",
     type: EXERCISE_TYPES.WEIGHTED,
     description:
@@ -316,6 +376,8 @@ const RAW_EXERCISES = [
     id: "plancha_frontal",
     label: "Plancha frontal",
     emoji: "📏",
+    videoTitle: "Plank (short)",
+    videoUrl: "https://www.youtube.com/shorts/hoeNgjheDHk",
     color: "#0ea5e9",
     type: EXERCISE_TYPES.BODYWEIGHT,
     description:
@@ -325,6 +387,8 @@ const RAW_EXERCISES = [
     id: "plancha_lateral",
     label: "Plancha lateral",
     emoji: "〰️",
+    videoTitle: "Side plank (short)",
+    videoUrl: "https://www.youtube.com/shorts/sH5PiIUjDW8",
     color: "#22c55e",
     type: EXERCISE_TYPES.BODYWEIGHT,
     description:
@@ -334,6 +398,8 @@ const RAW_EXERCISES = [
     id: "dead_bug",
     label: "Dead bug",
     emoji: "🐞",
+    videoTitle: "Dead bug (short)",
+    videoUrl: "https://www.youtube.com/shorts/Aoipu_fl3HA",
     color: "#38bdf8",
     type: EXERCISE_TYPES.BODYWEIGHT,
     description:
@@ -343,6 +409,8 @@ const RAW_EXERCISES = [
     id: "pallof_press_banda",
     label: "Pallof press con banda",
     emoji: "🧷",
+    videoTitle: "Pallof press band (short)",
+    videoUrl: "https://www.youtube.com/shorts/dHxa57kBAmc",
     color: "#6366f1",
     type: EXERCISE_TYPES.WEIGHTED,
     description:
@@ -352,6 +420,8 @@ const RAW_EXERCISES = [
     id: "rollout_rueda",
     label: "Roll-out con rueda abdominal",
     emoji: "🎡",
+    videoTitle: "Ab wheel rollout (short)",
+    videoUrl: "https://www.youtube.com/shorts/C_j2Ux1Se5c",
     color: "#0f766e",
     type: EXERCISE_TYPES.WEIGHTED,
     description:
@@ -361,6 +431,8 @@ const RAW_EXERCISES = [
     id: "russian_twist",
     label: "Russian twist",
     emoji: "🌀",
+    videoTitle: "Russian twist (short)",
+    videoUrl: "https://www.youtube.com/shorts/KUsvxlmpPoI",
     color: "#06b6d4",
     type: EXERCISE_TYPES.WEIGHTED,
     description:
@@ -370,6 +442,8 @@ const RAW_EXERCISES = [
     id: "hollow_hold",
     label: "Hollow hold",
     emoji: "🥚",
+    videoTitle: "Hollow hold (short)",
+    videoUrl: "https://www.youtube.com/shorts/gT7gnzxhXyE",
     color: "#0891b2",
     type: EXERCISE_TYPES.BODYWEIGHT,
     description:
@@ -384,6 +458,8 @@ const RAW_EXERCISES = [
     label: "Kettlebell swing",
     emoji: "🛎️",
     color: "#f97316",
+    videoTitle: "Kettlebell Swing (short técnica bisagra)",
+    videoUrl: "https://www.youtube.com/shorts/ys5Q1jLZfPE",
     type: EXERCISE_TYPES.WEIGHTED,
     description:
       "Movimiento explosivo de bisagra de cadera para potencia y resistencia del tren posterior.",
@@ -393,6 +469,8 @@ const RAW_EXERCISES = [
     label: "Thruster con barra o mancuernas",
     emoji: "🚀",
     color: "#f97316",
+    videoTitle: "Thruster Barbell (short)",
+    videoUrl: "https://www.youtube.com/shorts/5mCjC5XqF1Y",
     type: EXERCISE_TYPES.WEIGHTED,
     description:
       "Combinación de sentadilla frontal y press de hombros. Ejercicio global para fuerza y capacidad cardiorrespiratoria.",
@@ -432,6 +510,8 @@ const RAW_EXERCISES = [
     label: "Burpee",
     emoji: "💥",
     color: "#f97316",
+    videoTitle: "Burpee (short técnica eficiente)",
+    videoUrl: "https://www.youtube.com/shorts/TU8QYVW0gDU",
     type: EXERCISE_TYPES.BODYWEIGHT,
     description:
       "Ejercicio pliométrico de cuerpo completo que combina sentadilla, plancha y salto. Muy exigente a nivel metabólico.",
@@ -441,6 +521,8 @@ const RAW_EXERCISES = [
     label: "Farmer walk",
     emoji: "🧺",
     color: "#22c55e",
+    videoTitle: "Farmer’s Walk (short)",
+    videoUrl: "https://www.youtube.com/shorts/6Z15_WdXmVw",
     type: EXERCISE_TYPES.WEIGHTED,
     description:
       "Caminata cargando peso en las manos. Desarrolla agarre, core y estabilidad general.",
@@ -450,6 +532,8 @@ const RAW_EXERCISES = [
     label: "Empuje de trineo",
     emoji: "🛷",
     color: "#0ea5e9",
+    videoTitle: "Sled Push (short)",
+    videoUrl: "https://www.youtube.com/shorts/2lYkF9KJZrY",
     type: EXERCISE_TYPES.WEIGHTED,
     description:
       "Desplazamiento empujando un trineo cargado. Muy útil para fuerza específica y acondicionamiento.",
@@ -459,6 +543,8 @@ const RAW_EXERCISES = [
     label: "Saltos al cajón",
     emoji: "📦",
     color: "#f97316",
+    videoTitle: "Box Jump (short técnica aterrizaje)",
+    videoUrl: "https://www.youtube.com/shorts/52rU2jz5F8o",
     type: EXERCISE_TYPES.BODYWEIGHT,
     description:
       "Pliometría de tren inferior para mejorar potencia y capacidad de absorción de impactos.",
@@ -472,6 +558,8 @@ const RAW_EXERCISES = [
     label: "Rotación externa con banda",
     emoji: "🧵",
     color: "#818cf8",
+    videoTitle: "External Rotation Band (short)",
+    videoUrl: "https://www.youtube.com/shorts/Qk8mGkTtZ5g",
     type: EXERCISE_TYPES.WEIGHTED,
     description:
       "Ejercicio específico para manguito rotador, clave en rehabilitación y prevención de lesiones de hombro.",
@@ -481,6 +569,8 @@ const RAW_EXERCISES = [
     label: "Elevaciones laterales con mancuernas",
     emoji: "📐",
     color: "#6366f1",
+    videoTitle: "Lateral Raise (short técnica)",
+    videoUrl: "https://www.youtube.com/shorts/3VcKaXpzqRo",
     type: EXERCISE_TYPES.WEIGHTED,
     description:
       "Trabajo para deltoides medio, útil en fases controladas de rehabilitación y en programas de fuerza.",
@@ -490,6 +580,8 @@ const RAW_EXERCISES = [
     label: "Scaption con mancuernas",
     emoji: "🪄",
     color: "#4f46e5",
+    videoTitle: "Scaption Dumbbell (short)",
+    videoUrl: "https://www.youtube.com/shorts/4mL0v5Z9WzM",
     type: EXERCISE_TYPES.WEIGHTED,
     description:
       "Elevación en el plano de la escápula para trabajar manguito rotador y deltoides con buena alineación articular.",
@@ -499,6 +591,8 @@ const RAW_EXERCISES = [
     label: "Deslizamientos en pared (wall slide)",
     emoji: "🧱",
     color: "#38bdf8",
+    videoTitle: "Wall Slides Shoulder Rehab (short)",
+    videoUrl: "https://www.youtube.com/shorts/8L4dZp3EJ0Y",
     type: EXERCISE_TYPES.BODYWEIGHT,
     description:
       "Ejercicio de movilidad y control escapular deslizando brazos sobre la pared. Muy usado en rehabilitación de hombro.",
@@ -508,6 +602,8 @@ const RAW_EXERCISES = [
     label: "Serratus punch con banda",
     emoji: "🥊",
     color: "#22c55e",
+    videoTitle: "Serratus Punch Band (short)",
+    videoUrl: "https://www.youtube.com/shorts/vxjzT4OQkV4",
     type: EXERCISE_TYPES.WEIGHTED,
     description:
       "Trabaja serrato anterior y control escapular, importante en patologías de hombro y rendimiento en empujes.",
@@ -521,6 +617,8 @@ const RAW_EXERCISES = [
     label: "Clamshell con banda",
     emoji: "🐚",
     color: "#22c55e",
+    videoTitle: "Clamshell Band (short)",
+    videoUrl: "https://www.youtube.com/shorts/XZC2W2Y1jzI",
     type: EXERCISE_TYPES.WEIGHTED,
     description:
       "Ejercicio de abducción de cadera con banda, muy utilizado para fortalecer glúteo medio en rehabilitación de rodilla y cadera.",
@@ -530,6 +628,8 @@ const RAW_EXERCISES = [
     label: "Monster walk con banda",
     emoji: "👣",
     color: "#16a34a",
+    videoTitle: "Monster Walk Band (short)",
+    videoUrl: "https://www.youtube.com/shorts/k7RZ0bq9mE0",
     type: EXERCISE_TYPES.WEIGHTED,
     description:
       "Desplazamientos laterales con banda en las piernas para glúteos y control de rodilla.",
@@ -539,6 +639,8 @@ const RAW_EXERCISES = [
     label: "Puente de glúteo unilateral",
     emoji: "🦵",
     color: "#10b981",
+    videoTitle: "Single-Leg Glute Bridge (short)",
+    videoUrl: "https://www.youtube.com/shorts/3zWZQ9c5bM0",
     type: EXERCISE_TYPES.BODYWEIGHT,
     description:
       "Puente de glúteo apoyando solo una pierna. Mejora fuerza y control unilateral de cadera.",
@@ -548,6 +650,8 @@ const RAW_EXERCISES = [
     label: "Sentadilla a cajón",
     emoji: "🪑",
     color: "#facc15",
+    videoTitle: "Box Squat Rehab (short)",
+    videoUrl: "https://www.youtube.com/shorts/0H7mZ6K2s0I",
     type: EXERCISE_TYPES.BODYWEIGHT,
     description:
       "Sentadilla controlada sentado y levantándose de un cajón. Muy útil en readaptación de rodilla y cadera.",
@@ -557,6 +661,8 @@ const RAW_EXERCISES = [
     label: "Nordic hamstring",
     emoji: "🧎",
     color: "#f97316",
+    videoTitle: "Nordic Hamstring (short)",
+    videoUrl: "https://www.youtube.com/shorts/4m1yFh6XH9Q",
     type: EXERCISE_TYPES.BODYWEIGHT,
     description:
       "Ejercicio excéntrico de isquiosurales para prevención de lesiones y desarrollo de fuerza excéntrica.",
@@ -566,6 +672,8 @@ const RAW_EXERCISES = [
     label: "Excéntrico de gemelos en bordillo",
     emoji: "🪜",
     color: "#f97316",
+    videoTitle: "Calf Eccentric Heel Drop (short)",
+    videoUrl: "https://www.youtube.com/shorts/RmZ4pF6c1zE",
     type: EXERCISE_TYPES.BODYWEIGHT,
     description:
       "Elevaciones de talón con énfasis en la fase de descenso, muy utilizado en tendinopatía aquílea.",
@@ -579,6 +687,8 @@ const RAW_EXERCISES = [
     label: "Remo en TRX",
     emoji: "🎗️",
     color: "#0ea5e9",
+    videoTitle: "TRX Row (short)",
+    videoUrl: "https://www.youtube.com/shorts/7nF8mQ9uZgU",
     type: EXERCISE_TYPES.BODYWEIGHT,
     description:
       "Ejercicio de tracción con el propio peso corporal usando correas de suspensión. Ajustable por ángulo.",
@@ -588,6 +698,8 @@ const RAW_EXERCISES = [
     label: "Flexiones en TRX",
     emoji: "🎗️",
     color: "#38bdf8",
+    videoTitle: "TRX Push-up (short)",
+    videoUrl: "https://www.youtube.com/shorts/yZP5m7R8q2I",
     type: EXERCISE_TYPES.BODYWEIGHT,
     description:
       "Flexiones con manos en TRX, aumentando la demanda de estabilidad de hombros y core.",
@@ -597,6 +709,8 @@ const RAW_EXERCISES = [
     label: "Y-T-W en TRX",
     emoji: "🔤",
     color: "#6366f1",
+    videoTitle: "TRX Y-T-W (short)",
+    videoUrl: "https://www.youtube.com/shorts/JQ9f2m6ZK5o",
     type: EXERCISE_TYPES.BODYWEIGHT,
     description:
       "Secuencia de movimientos de hombro con TRX formando letras Y, T y W. Excelente para musculatura escapular.",
@@ -610,6 +724,8 @@ const RAW_EXERCISES = [
     label: "Lanzamiento de balón medicinal contra pared",
     emoji: "🏐",
     color: "#f97316",
+    videoTitle: "Med Ball Chest Pass Wall (short)",
+    videoUrl: "https://www.youtube.com/shorts/v5qL1C9b2Zk",
     type: EXERCISE_TYPES.WEIGHTED,
     description:
       "Lanzamientos explosivos con balón medicinal para trabajar potencia de tren superior y core.",
@@ -619,6 +735,8 @@ const RAW_EXERCISES = [
     label: "Slam con balón medicinal",
     emoji: "💣",
     color: "#f97316",
+    videoTitle: "Med Ball Slam (short)",
+    videoUrl: "https://www.youtube.com/shorts/0z4Yp9kE2aM",
     type: EXERCISE_TYPES.WEIGHTED,
     description:
       "Golpes al suelo con balón medicinal. Ejercicio explosivo de cuerpo completo con alta demanda de core.",
@@ -628,6 +746,8 @@ const RAW_EXERCISES = [
     label: "Rotaciones con balón contra la pared",
     emoji: "🌀",
     color: "#06b6d4",
+    videoTitle: "Med Ball Rotational Throw (short)",
+    videoUrl: "https://www.youtube.com/shorts/VG9Q2mJpH0U",
     type: EXERCISE_TYPES.WEIGHTED,
     description:
       "Lanzamientos rotacionales con balón, útil para deporte de raqueta, lanzadores y trabajo específico de core.",
