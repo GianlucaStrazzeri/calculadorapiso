@@ -46,7 +46,7 @@
 
 /* Modal overlay */
 .tp-modal-overlay{position:fixed;inset:0;background:rgba(2,6,23,0.45);display:flex;align-items:center;justify-content:center;z-index:2000;padding:12px}
-.tp-modal-content{width:min(980px,96%);background:var(--card-bg);border-radius:12px;box-shadow:0 12px 32px rgba(2,6,23,0.08);max-height:90vh;overflow:auto}
+.tp-modal-content{width:min(980px,96%);background:rgba(255,255,255,0.98);border-radius:12px;box-shadow:0 24px 70px rgba(2,6,23,0.12);max-height:90vh;overflow:auto}
 .tp-modal-content.small{width:min(680px,96%)}
 
 /* Mobile: bottom sheet style for modals to feel native */

@@ -6,11 +6,11 @@
 .cr-modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(2,6,23,0.28);
+  background: rgba(2,6,23,0.48);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 10005;
+  z-index: 11005;
   -webkit-backdrop-filter: blur(1px);
   backdrop-filter: blur(1px);
   pointer-events: auto;
@@ -19,11 +19,11 @@
 /* CONTENEDOR DEL MODAL */
 .cr-modal {
   position: relative;
-  z-index: 10006;
-  background: var(--card-bg);
+  z-index: 11006;
+  background: rgba(255,255,255,0.98);
   color: var(--text);
   border-radius: 16px;
-  box-shadow: var(--elevated-shadow);
+  box-shadow: 0 30px 90px rgba(2,6,23,0.42);
   width: 100%;
   max-width: 520px;
   margin: 12px;
@@ -139,20 +139,15 @@
 }
 
 /* PIE DEL MODAL (BOTONES) */
-.cr-modal-header {
-  padding: 14px 18px;
-  border-bottom: 1px solid var(--card-border);
+.cr-modal-footer {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  gap: 8px;
+  padding: 10px 14px;
+  justify-content: flex-end;
+  border-top: 1px solid var(--card-border);
+  background: transparent;
 }
-.cr-modal-header h2 {
-  margin: 0;
-  font-size: 1.05rem;
-  font-weight: 600;
-  color: var(--text);
-}
+.cr-modal-footer .cr-btn {
   gap: 6px;
   padding: 7px 14px;
   border-radius: 999px;

@@ -7,7 +7,7 @@
   --muted: #475569; /* secondary text */
   --bg: #ffffff;
   --surface: #f8fafc;
-  --card-bg: #ffffff;
+  --card-bg: var(--surface);
   --card-border: #e6eef8;
   --elevated-shadow: 0 10px 30px rgba(2,6,23,0.06);
   --primary: #1e40af; /* darker blue for better contrast */

@@ -1,19 +1,19 @@
 .sf-container{
-  padding:16px;font-family:system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;color:#111827;background:#fff;
+  padding:16px;font-family:system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;color:var(--text);background:var(--card-bg);
 }
 .sf-title{font-size:1.1rem;margin-bottom:10px}
 .sf-field{margin-bottom:10px;display:flex;flex-direction:column;gap:6px}
 .sf-label{font-size:0.9rem;color:#374151}
 .sf-client-info{margin-bottom:8px}
 .sf-client-name{font-size:0.95rem;color:#0f172a;font-weight:600}
-.sf-input{padding:10px;border-radius:8px;border:1px solid #e6e9ee;background:transparent;font-size:0.95rem}
+.sf-input{padding:10px;border-radius:8px;border:1px solid var(--card-border);background:var(--surface);font-size:0.95rem;color:var(--text)}
 .sf-input.small{width:72px}
-.sf-textarea{padding:10px;border-radius:8px;border:1px solid #e6e9ee;resize:vertical}
+.sf-textarea{padding:10px;border-radius:8px;border:1px solid var(--card-border);resize:vertical;background:var(--surface);color:var(--text)}
 .sf-exercises{margin-top:8px}
-.sf-exercise-card{border:1px solid #eee;padding:8px;border-radius:8px;margin-top:8px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-.sf-btn{padding:8px 12px;border-radius:999px;border:1px solid #e6e9ee;background:#fff;color:#374151;font-weight:600;cursor:pointer}
-.sf-btn.primary{background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;border:none}
-.sf-btn.danger{background:transparent;color:#ef4444;border:none}
+.sf-exercise-card{border:1px solid var(--card-border);padding:8px;border-radius:8px;margin-top:8px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--card-bg)}
+.sf-btn{padding:8px 12px;border-radius:999px;border:1px solid var(--card-border);background:var(--surface);color:var(--text);font-weight:600;cursor:pointer}
+.sf-btn.primary{background:linear-gradient(135deg,var(--primary),var(--primary-variant));color:var(--on-primary);border:none}
+.sf-btn.danger{background:transparent;color:var(--danger);border:none}
 .sf-actions{display:flex;gap:8px;margin-top:12px}
 
 @media (max-width:420px){

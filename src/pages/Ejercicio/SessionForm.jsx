@@ -84,6 +84,11 @@ export default function SessionForm({ initial = null, onClose = () => {}, onSave
         <input className="sf-input" type="date" value={session.date} onChange={(e) => update('date', e.target.value)} />
       </div>
 
+          <div className="sf-field">
+            <label className="sf-label">Repetición (cada N días, 0 = no repetir)</label>
+            <input className="sf-input" type="number" min={0} value={session.repeatEveryDays || 0} onChange={(e) => update('repeatEveryDays', Number(e.target.value) || 0)} />
+          </div>
+
       <div className="sf-field">
         <label className="sf-label">Objetivos (texto libre)</label>
         <textarea className="sf-textarea" value={session.objectives} onChange={(e) => update('objectives', e.target.value)} rows={3} />
@@ -105,12 +110,12 @@ export default function SessionForm({ initial = null, onClose = () => {}, onSave
               onChange={(e) => setSearchTerm(e.target.value)}
             />
             {filteredTemplates.length > 0 && (
-              <div style={{ background: '#fff', border: '1px solid #eee', maxHeight: 260, overflow: 'auto', marginTop: 6, borderRadius: 6 }}>
-                {filteredTemplates.slice(0, 50).map((t) => (
-                  <div key={t.id} style={{ padding: 8, borderBottom: '1px solid #f3f4f6', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ background: 'var(--surface)', border: '1px solid var(--card-border)', maxHeight: 260, overflow: 'auto', marginTop: 6, borderRadius: 6 }}>
+                {filteredTemplates.slice(0, 50).map((t, idx) => (
+                  <div key={t.id} style={{ padding: 8, borderBottom: idx < filteredTemplates.length - 1 ? '1px solid var(--card-border)' : 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--card-bg)' }}>
                     <div>
-                      <div style={{ fontWeight: 700 }}>{t.label}</div>
-                      <div style={{ fontSize: 12, color: '#6b7280' }}>{t.description}</div>
+                      <div style={{ fontWeight: 700, color: 'var(--text)' }}>{t.label}</div>
+                      <div style={{ fontSize: 12, color: 'var(--muted)' }}>{t.description}</div>
                     </div>
                     <div>
                       <button className="sf-btn" onClick={() => { addExerciseFromTemplate(t); setSearchTerm(''); }}>Agregar</button>

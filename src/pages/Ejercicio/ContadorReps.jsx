@@ -88,6 +88,7 @@ export default function ContadorReps() {
   // Modal
   const [showAddExerciseModal, setShowAddExerciseModal] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [showVolume, setShowVolume] = useState(false);
   const [showTabataModal, setShowTabataModal] = useState(false);
   const [activeTabataConfig, setActiveTabataConfig] = useState(null);
   const [highlightedPlannedSessionId, setHighlightedPlannedSessionId] = useState(null);
@@ -647,21 +648,7 @@ export default function ContadorReps() {
           <header className="cr-header">
             <h1 className="cr-title">Planificador de entrenamiento</h1>
             <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
-              <button
-                type="button"
-                onClick={clearLocalData}
-                style={{
-                  padding: "2px 2px",
-                  borderRadius: 4,
-                  border: "1px solid #e5e7eb",
-                  background: "#fff",
-                  color: "#374151",
-                  fontSize: "0.85rem",
-                  cursor: "pointer",
-                }}
-              >
-                Borrar datos locales
-              </button>
+              {/* Botón 'Borrar datos locales' eliminado: no era funcional */}
 
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <ClientSelector
@@ -686,7 +673,7 @@ export default function ContadorReps() {
                     <button
                       type="button"
                       onClick={() => setShowAssignmentsTable(true)}
-                      style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #e5e7eb', background: '#fff', color: '#374151', fontSize: '0.85rem', cursor: 'pointer' }}
+                      style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #e5e7eb', background: 'var(--card-bg)', color: '#374151', fontSize: '0.85rem', cursor: 'pointer' }}
                     >
                       Ver asignaciones
                     </button>
@@ -739,8 +726,20 @@ export default function ContadorReps() {
                 to expose only the assigned work and counter panel. */}
             {!isPatientPublicView && (
               <>
-                <div style={{ marginBottom: 12 }}>
-                  <VolumeCalendar sessionHistory={sessionHistory} />
+                <div style={{ marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <button
+                    type="button"
+                    className="cr-btn"
+                    onClick={() => setShowVolume((s) => !s)}
+                    style={{ borderRadius: 999, padding: "6px 10px", fontSize: "0.85rem", border: '1px solid #000' }}
+                  >
+                    {showVolume ? 'Ocultar volumen' : 'Volumen levantado'}
+                  </button>
+                  {showVolume && (
+                    <div style={{ marginTop: 8, width: '100%' }}>
+                      <VolumeCalendar sessionHistory={sessionHistory} />
+                    </div>
+                  )}
                 </div>
 
                 <ExerciseSelector
@@ -770,7 +769,7 @@ export default function ContadorReps() {
                       </div>
                 </div>
                 {assignedOpen && (
-                  <div style={{ padding: 12, background: '#fff', border: '1px solid #e6eef8', borderRadius: 8 }}>
+                  <div style={{ padding: 12, background: 'var(--card-bg)', border: '1px solid #e6eef8', borderRadius: 8 }}>
                     {clientAssignmentsForSelected.length === 0 ? (
                       <div style={{ color: '#6b7280' }}>No hay asignaciones para este cliente.</div>
                     ) : (
@@ -849,7 +848,7 @@ export default function ContadorReps() {
                 ) : (
                   <div style={{ display: 'grid', gap: 8 }}>
                     {clientPlannedSessions.map((s) => (
-                      <div key={s.id} style={{ padding: 10, background: '#fff', border: highlightedPlannedSessionId === s.id ? '2px solid var(--accent-color,#2563eb)' : '1px solid #f3f4f6', borderRadius: 8, boxShadow: highlightedPlannedSessionId === s.id ? '0 6px 18px rgba(37,99,235,0.12)' : undefined }}>
+                      <div key={s.id} style={{ padding: 10, background: 'var(--card-bg)', border: highlightedPlannedSessionId === s.id ? '2px solid var(--accent-color,#2563eb)' : '1px solid #f3f4f6', borderRadius: 8, boxShadow: highlightedPlannedSessionId === s.id ? '0 6px 18px rgba(37,99,235,0.12)' : undefined }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <div>
                             <strong>{s.date}</strong>
@@ -1011,7 +1010,7 @@ export default function ContadorReps() {
                     type="button"
                     className="cr-btn"
                     onClick={() => setShowHistory(false)}
-                    style={{ borderRadius: 999, padding: "6px 10px", fontSize: "0.85rem", background: "#fff", border: "1px solid #e5e7eb" }}
+                    style={{ borderRadius: 999, padding: "6px 10px", fontSize: "0.85rem", background: "var(--card-bg)", border: "1px solid #e5e7eb" }}
                   >
                     Ocultar historial
                   </button>
@@ -1033,7 +1032,7 @@ export default function ContadorReps() {
                     type="button"
                     className="cr-btn"
                     onClick={() => setShowHistory(true)}
-                    style={{ borderRadius: 999, padding: "6px 10px", fontSize: "0.85rem", background: "#fff", border: "1px solid #e5e7eb" }}
+                    style={{ borderRadius: 999, padding: "6px 10px", fontSize: "0.85rem", background: "var(--card-bg)", border: "1px solid #e5e7eb" }}
                   >
                     Historial volúmenes
                   </button>

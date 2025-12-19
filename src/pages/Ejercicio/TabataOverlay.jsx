@@ -104,15 +104,15 @@ export default function TabataOverlay({ config, onFinish, onCancel }) {
   return (
     <div className="tt-wrapper" style={{ position: "fixed", inset: 0, zIndex: 1200, background: bgColor }}>
       <div className="tt-card" style={{ maxWidth: "100%", width: "100%", borderRadius: 0, boxShadow: "none", background: "transparent" }}>
-        <div style={{ padding: "18px 14px", display: "flex", justifyContent: "space-between", alignItems: "center", color: "#fff" }}>
+        <div style={{ padding: "18px 14px", display: "flex", justifyContent: "space-between", alignItems: "center", color: "var(--on-primary)" }}>
           <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-            <button onClick={() => { if (tickRef.current) { clearInterval(tickRef.current); tickRef.current=null; } if (onCancel) onCancel(); }} style={{ background: "transparent", border: "none", color: "#fff", fontSize: 22 }}>✕</button>
+            <button onClick={() => { if (tickRef.current) { clearInterval(tickRef.current); tickRef.current=null; } if (onCancel) onCancel(); }} style={{ background: "transparent", border: "none", color: "var(--on-primary)", fontSize: 22 }}>✕</button>
           </div>
           <div style={{ fontSize: 20, fontWeight: 700 }}>{current.label}</div>
           <div />
         </div>
 
-        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "60vh", color: "#fff" }}>
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "60vh", color: "var(--on-primary)" }}>
           <div style={{ textAlign: "center" }}>
             <div style={{ fontSize: 160, fontWeight: 700, lineHeight: 1 }}>{mm}:{ss}</div>
             <div style={{ marginTop: 12, fontSize: 20, opacity: 0.95 }}>{index + 1} / {intervals.length}</div>
@@ -128,7 +128,7 @@ export default function TabataOverlay({ config, onFinish, onCancel }) {
           </div>
         </div>
 
-        <div style={{ padding: "8px 14px", display: "flex", flexDirection: "column", gap: 10, color: "#fff" }}>
+        <div style={{ padding: "8px 14px", display: "flex", flexDirection: "column", gap: 10, color: "var(--on-primary)" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div style={{ fontSize: 18 }}>{config.sets} sets • {config.cycles} cycles</div>
             <div style={{ fontSize: 14 }}>

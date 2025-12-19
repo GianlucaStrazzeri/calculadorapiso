@@ -12,6 +12,7 @@ export default function TrainingPlanner() {
   const clientFromQuery = search.get('clientId');
   const openSummaryParam = search.get('openSummary');
   const [sessions, setSessions] = useState([]);
+  const [sessionHistory, setSessionHistory] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
   const [showFeedbackFor, setShowFeedbackFor] = useState(null);
@@ -21,6 +22,14 @@ export default function TrainingPlanner() {
 
   useEffect(() => {
     setSessions(trainingStorage.listSessions().sort((a,b)=>a.date.localeCompare(b.date)));
+    try {
+      const raw = localStorage.getItem('cr_state_v1');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        const hist = Array.isArray(parsed.sessionHistory) ? parsed.sessionHistory.map((h) => ({ ...h, date: h.date ? new Date(h.date) : new Date(h.date) })) : [];
+        setSessionHistory(hist);
+      }
+    } catch (e) { console.warn('No se pudo cargar sessionHistory en TrainingPlanner', e); }
   }, []);
 
   useEffect(() => {
@@ -135,6 +144,28 @@ export default function TrainingPlanner() {
               <div className="tp-summary" style={{ marginTop: 8 }}>
                 <div className="tp-stat">Sesiones guardadas: {sessions.length}</div>
                 <div className="tp-stat">Sesiones próximas: {upcoming.length}</div>
+              </div>
+              <div style={{ marginTop: 10 }}>
+                <h4>Cumplimiento por cliente</h4>
+                <div style={{ display: 'grid', gap: 8 }}>
+                  {Object.keys(clientsMap).length === 0 && <div style={{ color: '#64748b' }}>No hay clientes registrados.</div>}
+                  {Object.keys(clientsMap).map((cid) => {
+                    const planned = sessions.filter((s) => s.clientId === cid).length;
+                    const completed = sessionHistory.filter((h) => String(h.clientId) === String(cid)).length;
+                    const pct = planned === 0 ? 0 : Math.round((completed / planned) * 100);
+                    return (
+                      <div key={cid} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 8px', borderRadius: 8, background: 'var(--card-bg)', border: '1px solid var(--card-border)' }}>
+                        <div>
+                          <strong>{clientsMap[cid] || cid}</strong>
+                          <div style={{ fontSize: 12, color: 'var(--muted)' }}>{planned} sesiones planificadas · {completed} completadas</div>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                          <div style={{ fontWeight: 700 }}>{pct}%</div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
               <div className="tp-charts" style={{ marginTop: 12 }}>
                 <h4>Visor rápido</h4>

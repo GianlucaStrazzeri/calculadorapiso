@@ -131,6 +131,24 @@ export function ClientSelector({
         )}
       </div>
 
+      {/* SUGERENCIAS: aparecerán al escribir en el input de búsqueda */}
+      {searchTerm && filtered.length > 0 && (
+        <div className="cr-suggestions" role="listbox">
+          {filtered.slice(0, 8).map((client) => (
+            <div
+              key={client.id}
+              role="option"
+              className="cr-suggestion-item"
+              onMouseDown={(e) => { e.preventDefault(); }}
+              onClick={() => { setSearchTerm(''); onChangeClient(client.id); }}
+            >
+              <div className="cr-suggestion-name">{client.nombre}</div>
+              {client.nota && <div className="cr-suggestion-note">{client.nota}</div>}
+            </div>
+          ))}
+        </div>
+      )}
+
       {(!clients || clients.length === 0) ? (
         <p className="cr-client-empty">
           Todavía no hay clientes. Añade el primero para asignarle ejercicios.
@@ -196,31 +214,7 @@ export function ClientSelector({
         </div>
       )}
 
-      {/* Export / Import clients (help migrate from localhost to production) */}
-      {!disableAdd && (
-        <div style={{ marginTop: 8, display: 'flex', gap: 8 }}>
-          <button className="cr-btn" onClick={() => {
-            try {
-              const data = JSON.stringify(clients || []);
-              if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(data).then(()=> alert('Clientes copiados al portapapeles (JSON)'));
-              } else {
-                const ta = document.createElement('textarea'); ta.value = data; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); alert('Clientes copiados al portapapeles (JSON)');
-              }
-            } catch (e) { alert('No se pudo exportar clientes'); }
-          }}>Exportar clientes</button>
-          <button className="cr-btn" onClick={() => {
-            const raw = prompt('Pega aquí el JSON de clientes para importar (reemplazará los existentes):');
-            if (!raw) return;
-            try {
-              const parsed = JSON.parse(raw);
-              if (!Array.isArray(parsed)) throw new Error('Formato incorrecto');
-              localStorage.setItem('cr_clients_v1', JSON.stringify(parsed));
-              alert('Clientes importados. Recarga la página para ver los cambios.');
-            } catch (e) { alert('JSON inválido'); }
-          }}>Importar clientes</button>
-        </div>
-      )}
+      {/* Export/Import buttons removed — not needed */}
 
       {fixedClientId && (
         <div style={{ marginTop: 8, color: "#9ca3af", fontSize: "0.9rem" }}>

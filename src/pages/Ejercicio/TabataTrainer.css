@@ -37,7 +37,7 @@
 /* BARRA SUPERIOR */
 .tt-topbar {
   background: var(--tt-blue);
-  color: #ffffff;
+  color: var(--on-primary);
   padding: 10px 14px;
   display: flex;
   align-items: center;
@@ -58,7 +58,7 @@
 /* RESUMEN (debajo de la barra) */
 .tt-summary {
   background: var(--tt-blue-dark);
-  color: #ffffff;
+  color: var(--on-primary);
   padding: 8px 14px;
   display: flex;
   align-items: center;
@@ -223,7 +223,7 @@
 .tt-bottom-list,
 .tt-bottom-plus {
   background: #1a237e;
-  color: #ffffff;
+  color: var(--on-primary);
 }
 
 .tt-bottom-list:hover,

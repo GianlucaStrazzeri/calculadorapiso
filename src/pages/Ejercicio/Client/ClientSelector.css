@@ -78,6 +78,27 @@
   line-height: 1.4;
 }
 
+/* Suggestions dropdown for client search */
+.cr-suggestions{
+  margin-top: 6px;
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
+  border-radius: 8px;
+  max-height: 240px;
+  overflow: auto;
+  box-shadow: 0 8px 30px rgba(2,6,23,0.06);
+}
+.cr-suggestion-item{
+  padding: 8px 12px;
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  cursor:pointer;
+}
+.cr-suggestion-item:hover{background:var(--surface)}
+.cr-suggestion-name{font-weight:600;color:var(--text)}
+.cr-suggestion-note{font-size:12px;color:var(--muted)}
+
 /* Select de clientes */
 .cr-select {
   width: 100%;
