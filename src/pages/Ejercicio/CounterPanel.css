@@ -23,3 +23,21 @@
 .cr-btn-full{display:block;width:100%;padding:10px;border-radius:10px;border:2px solid var(--accent-color,#2563eb);background:transparent;color:var(--accent-color,#2563eb);font-weight:700}
 .cr-target-row{display:flex;align-items:center;gap:8px}
 @media (max-width:600px){.cr-counter-circle{width:180px;height:180px}.cr-counter-header{flex-direction:column}}
+
+/* Ensure readable button text inside the counter panel (dark theme) */
+.cr-counter-panel .cr-btn{
+	background: rgba(255,255,255,0.06);
+	color: #e5e7eb;
+	border-color: rgba(255,255,255,0.06);
+}
+.cr-counter-panel .cr-btn-primary{
+	background: var(--accent-color,#2563eb);
+	color: #fff;
+	border-color: transparent;
+}
+.cr-counter-panel .cr-btn-accent{background:var(--accent-color,#2563eb);color:#fff}
+.cr-counter-panel .cr-btn-secondary{
+	background: rgba(255,255,255,0.03);
+	color: #cbd5f5;
+	border-color: rgba(255,255,255,0.05);
+}

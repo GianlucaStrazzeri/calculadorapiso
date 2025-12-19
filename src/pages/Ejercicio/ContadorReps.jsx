@@ -28,6 +28,7 @@
 //   fuera del return.
 
 import React, { useState, useEffect, useRef } from "react";
+import trainingStorage from './trainingStorage';
 import { useParams, Link } from "react-router-dom";
 import "./ContadorReps.css";
 import { EXERCISES as BASE_EXERCISES } from "./exercisesConfig";
@@ -402,6 +403,16 @@ export default function ContadorReps() {
     return exerciseAssignments.filter((a) => a.clientId === selectedClientId);
   }, [exerciseAssignments, selectedClientId]);
 
+  // Sessions planned for this client (from Training Planner)
+  const clientPlannedSessions = React.useMemo(() => {
+    if (!selectedClientId) return [];
+    try {
+      return trainingStorage.listSessions().filter((s) => String(s.clientId) === String(selectedClientId));
+    } catch (e) {
+      return [];
+    }
+  }, [selectedClientId]);
+
   // Determine which exercise should be shown in the CounterPanel when in public patient view.
   // Prefer the first active assigned exercise, otherwise fallback to the first assignment.
   const assignedExerciseForCounter = React.useMemo(() => {
@@ -664,6 +675,75 @@ export default function ContadorReps() {
                     </pre>
                   )}
                 </div>
+              </div>
+            )}
+            {/* Mostrar sesiones planificadas del cliente (Training Planner) */}
+            {isPatientPublicView && selectedClientId && (
+              <div style={{ marginTop: 12 }}>
+                <h4 style={{ marginTop: 0 }}>Sesiones planificadas</h4>
+                {clientPlannedSessions.length === 0 ? (
+                  <div style={{ color: '#6b7280' }}>No hay sesiones planificadas para este cliente.</div>
+                ) : (
+                  <div style={{ display: 'grid', gap: 8 }}>
+                    {clientPlannedSessions.map((s) => (
+                      <div key={s.id} style={{ padding: 10, background: '#fff', border: '1px solid #f3f4f6', borderRadius: 8 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div>
+                            <strong>{s.date}</strong>
+                            <div style={{ fontSize: 12, color: '#6b7280' }}>{s.objectives}</div>
+                          </div>
+                          <div style={{ display: 'flex', gap: 8 }}>
+                            <button className="cr-btn" onClick={() => {
+                              // importar ejercicios de la sesión al historial (no persiste en planner)
+                              if (!s.exercises || s.exercises.length === 0) return;
+                              const entries = s.exercises.map((ex) => ({
+                                id: Date.now() + Math.floor(Math.random()*1000),
+                                exerciseId: ex.exerciseId || ex.name || 'custom',
+                                exerciseLabel: ex.name || (([...BASE_EXERCISES, ...customExercises].find(e=>e.id===ex.exerciseId)||{}).label) || ex.exerciseId || ex.name,
+                                reps: ex.reps || ex.sets || 0,
+                                weightKg: ex.load || 0,
+                                volume: (ex.load || 0) * (ex.reps || ex.sets || 0),
+                                clientId: selectedClientId,
+                                date: new Date(),
+                              }));
+                              setSessionHistory((prev) => [...entries, ...prev].slice(0,100));
+                            }}>Importar ejercicios</button>
+                          </div>
+                        </div>
+                        {s.exercises && s.exercises.length > 0 ? (
+                          <ul style={{ marginTop: 8 }}>
+                                {s.exercises.map((ex, i) => {
+                                  const exData = ([...BASE_EXERCISES, ...customExercises].find(e => e.id === ex.exerciseId) || null);
+                                  return (
+                                    <li key={i} style={{ fontSize: 13, display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+                                      {exData ? (
+                                        <VideoPreview exercise={exData} size={'small'} asButton={true} />
+                                      ) : (
+                                        <div style={{ width: 64, height: 40, background: '#f3f4f6', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{ex.name || '—'}</div>
+                                      )}
+                                      <div style={{ flex: 1 }}>
+                                        <div style={{ fontWeight: 700 }}>{exData?.label || ex.name || ex.exerciseId}</div>
+                                        <div style={{ fontSize: 12, color: '#6b7280' }}>{ex.sets ? `${ex.sets} sets · ` : ''}{ex.reps ? `${ex.reps} reps · ` : ''}{ex.load != null ? ex.load + ' kg' : ''}</div>
+                                      </div>
+                                      <div style={{ display: 'flex', gap: 8 }}>
+                                        <button className="cr-btn" onClick={() => {
+                                          if (!exData) return;
+                                          setSelectedExercise(exData);
+                                          if (ex.reps != null && ex.reps > 0) setTargetReps(ex.reps);
+                                          if (ex.load != null) setWeightKg(ex.load);
+                                        }}>Usar</button>
+                                      </div>
+                                    </li>
+                                  );
+                                })}
+                          </ul>
+                        ) : (
+                          <div style={{ marginTop: 8, color: '#9ca3af' }}>Sin ejercicios en esta sesión.</div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
         {showAssignmentsTable && (
