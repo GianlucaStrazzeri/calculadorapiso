@@ -37,6 +37,8 @@ export function ClientSelector({
   onOpenAssign = null,
   // optional: pass current assignments so we can include them in the shared link
   exerciseAssignments = [],
+  onEditClient = null,
+  onDeleteClient = null,
 }) {
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -171,13 +173,25 @@ export function ClientSelector({
             Link: <code style={{ background: "#f3f4f6", padding: "2px 6px", borderRadius: 6 }}>{buildShareUrl(selectedClientId)}</code>
           </div>
           {!fixedClientId && (
-            <button type="button" className="cr-btn" onClick={() => handleOpenLink(selectedClientId)} style={{ padding: "6px 8px" }}>
-              Abrir
-            </button>
+            <>
+              <button type="button" className="cr-btn" onClick={() => handleOpenLink(selectedClientId)} style={{ padding: "6px 8px" }}>
+                Abrir
+              </button>
+              <button type="button" className="cr-btn" onClick={() => { const u = buildShareUrl(selectedClientId); if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(u).catch(()=>handleCopyLink(selectedClientId)); } else { handleCopyLink(selectedClientId); } }} style={{ padding: "6px 8px" }}>
+                Copiar enlace
+              </button>
+              {onEditClient && (
+                <button type="button" className="cr-btn" onClick={() => onEditClient(clients.find(c => c.id === selectedClientId))} style={{ padding: "6px 8px" }}>
+                  Editar
+                </button>
+              )}
+              {onDeleteClient && (
+                <button type="button" className="cr-btn danger" onClick={() => onDeleteClient(selectedClientId)} style={{ padding: "6px 8px" }}>
+                  Eliminar
+                </button>
+              )}
+            </>
           )}
-          <button type="button" className="cr-btn" onClick={() => { const u = buildShareUrl(selectedClientId); if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(u).catch(()=>handleCopyLink(selectedClientId)); } else { handleCopyLink(selectedClientId); } }} style={{ padding: "6px 8px" }}>
-            Copiar enlace
-          </button>
         </div>
       )}
 

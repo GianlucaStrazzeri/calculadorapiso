@@ -2,15 +2,25 @@
 import React, { useState } from "react";
 import "./AddClientModal.css";
 
-export function AddClientModal({ isOpen, onClose, onAddClient }) {
-  const [nombre, setNombre] = useState("");
-  const [email, setEmail] = useState("");
-  const [telefono, setTelefono] = useState("");
-  const [nota, setNota] = useState("");
+export function AddClientModal({ isOpen, onClose, onAddClient, client = null, onUpdateClient = null }) {
+  const [nombre, setNombre] = useState(client ? client.nombre : "");
+  const [email, setEmail] = useState(client ? client.email || "" : "");
+  const [telefono, setTelefono] = useState(client ? client.telefono || "" : "");
+  const [nota, setNota] = useState(client ? client.nota || "" : "");
 
   const CLIENTS_KEY = "cr_clients_v1";
 
   if (!isOpen) return null;
+
+  // keep inputs in sync when client prop changes (open edit modal)
+  React.useEffect(() => {
+    if (client) {
+      setNombre(client.nombre || "");
+      setEmail(client.email || "");
+      setTelefono(client.telefono || "");
+      setNota(client.nota || "");
+    }
+  }, [client]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -45,10 +55,14 @@ export function AddClientModal({ isOpen, onClose, onAddClient }) {
       email: email.trim() || null,
       telefono: telefono.trim() || null,
       nota: nota.trim() || "",
-      createdAt: new Date().toISOString(),
+      createdAt: client ? client.createdAt : new Date().toISOString(),
     };
 
-    onAddClient(newClient);
+    if (client && onUpdateClient) {
+      onUpdateClient(newClient);
+    } else {
+      onAddClient(newClient);
+    }
     setNombre("");
     setEmail("");
     setTelefono("");
@@ -59,7 +73,7 @@ export function AddClientModal({ isOpen, onClose, onAddClient }) {
     <div className="cr-modal-backdrop">
       <div className="cr-modal">
         <div className="cr-modal-header">
-          <h2>➕ Añadir cliente</h2>
+          <h2>{client ? '✏️ Editar cliente' : '➕ Añadir cliente'}</h2>
           <button
             type="button"
             className="cr-modal-close"
@@ -124,7 +138,7 @@ export function AddClientModal({ isOpen, onClose, onAddClient }) {
               Cancelar
             </button>
             <button type="submit" className="cr-btn cr-btn-primary">
-              Guardar cliente
+              {client ? 'Actualizar cliente' : 'Guardar cliente'}
             </button>
           </div>
         </form>

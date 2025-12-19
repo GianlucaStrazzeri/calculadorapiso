@@ -71,6 +71,7 @@ export default function ContadorReps() {
   const [clients, setClients] = useState([]);
   const [selectedClientId, setSelectedClientId] = useState(null);
   const [showAddClientModal, setShowAddClientModal] = useState(false);
+  const [editingClient, setEditingClient] = useState(null);
   const [exerciseAssignments, setExerciseAssignments] = useState([]);
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [showPublicFeedback, setShowPublicFeedback] = useState(false);
@@ -86,6 +87,7 @@ export default function ContadorReps() {
   const [showHistory, setShowHistory] = useState(false);
   const [showTabataModal, setShowTabataModal] = useState(false);
   const [activeTabataConfig, setActiveTabataConfig] = useState(null);
+  const [highlightedPlannedSessionId, setHighlightedPlannedSessionId] = useState(null);
 
   // Lista total de ejercicios (base + personalizados)
   // Mostrar todos los ejercicios; `VideoPreview` renderiza miniatura
@@ -427,6 +429,20 @@ export default function ContadorReps() {
     }
   }, [params]);
 
+    // If the URL includes a specific session id (?s=...), highlight it and open assignments panel
+    useEffect(() => {
+      try {
+        const sp = new URLSearchParams(window.location.search || '');
+        const sId = sp.get('s');
+        if (sId) {
+          setHighlightedPlannedSessionId(sId);
+          setAssignedOpen(true);
+        }
+      } catch (e) {
+        // ignore
+      }
+    }, []);
+
   const isPatientPublicView = Boolean(params && params.clientId);
 
   // Precompute client assignments for the selected client (avoid IIFE in JSX)
@@ -503,6 +519,50 @@ export default function ContadorReps() {
     setShowAddExerciseModal(false);
   }
 
+  // Client CRUD handlers
+  function handleEditClient(client) {
+    if (!client) return;
+    setEditingClient(client);
+    setShowAddClientModal(true);
+  }
+
+  function handleUpdateClient(updated) {
+    setClients((prev) => {
+      const updatedList = prev.map((c) => (c.id === updated.id ? updated : c));
+      try { localStorage.setItem(CLIENTS_KEY, JSON.stringify(updatedList)); } catch (e) { console.warn('No se pudo guardar cliente', e); }
+      return updatedList;
+    });
+    setEditingClient(null);
+    setShowAddClientModal(false);
+  }
+
+  function handleDeleteClient(id) {
+    if (!id) return;
+    if (!confirm('Eliminar cliente y todas sus asignaciones/planificaciones?')) return;
+    // remove client
+    setClients((prev) => {
+      const updated = (prev || []).filter((c) => c.id !== id);
+      try { localStorage.setItem(CLIENTS_KEY, JSON.stringify(updated)); } catch (e) { console.warn('No se pudo borrar cliente', e); }
+      return updated;
+    });
+    // remove assignments for client
+    setExerciseAssignments((prev) => {
+      const updated = (prev || []).filter((a) => String(a.clientId) !== String(id));
+      try { localStorage.setItem(ASSIGNMENTS_KEY, JSON.stringify(updated)); } catch (e) { console.warn('No se pudo actualizar asignaciones', e); }
+      return updated;
+    });
+    // remove planner sessions for client
+    try {
+      const sessions = trainingStorage.listSessions().filter((s) => String(s.clientId) !== String(id));
+      // overwrite storage
+      localStorage.setItem('training_planner_sessions_v1', JSON.stringify(sessions));
+    } catch (e) { console.warn('No se pudo actualizar sesiones', e); }
+    // remove history entries for client
+    setSessionHistory((prev) => (prev || []).filter((h) => String(h.clientId) !== String(id)));
+    // clear selection if it was the deleted client
+    if (selectedClientId === id) setSelectedClientId(null);
+  }
+
   function clearLocalData() {
     try {
       localStorage.removeItem(STORAGE_KEY);
@@ -557,6 +617,8 @@ export default function ContadorReps() {
                     fixedClientId={isPatientPublicView ? selectedClientId : null}
                     onOpenAssign={() => setShowAssignModal(true)}
                     exerciseAssignments={exerciseAssignments}
+                    onEditClient={handleEditClient}
+                    onDeleteClient={handleDeleteClient}
                 />
                   {isPatientPublicView && selectedClientId && (
                     <button
@@ -719,7 +781,7 @@ export default function ContadorReps() {
                 ) : (
                   <div style={{ display: 'grid', gap: 8 }}>
                     {clientPlannedSessions.map((s) => (
-                      <div key={s.id} style={{ padding: 10, background: '#fff', border: '1px solid #f3f4f6', borderRadius: 8 }}>
+                      <div key={s.id} style={{ padding: 10, background: '#fff', border: highlightedPlannedSessionId === s.id ? '2px solid var(--accent-color,#2563eb)' : '1px solid #f3f4f6', borderRadius: 8, boxShadow: highlightedPlannedSessionId === s.id ? '0 6px 18px rgba(37,99,235,0.12)' : undefined }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <div>
                             <strong>{s.date}</strong>
@@ -954,7 +1016,8 @@ export default function ContadorReps() {
       {/* Modal para añadir clientes */}
       <AddClientModal
         isOpen={showAddClientModal}
-        onClose={() => setShowAddClientModal(false)}
+        onClose={() => { setShowAddClientModal(false); setEditingClient(null); }}
+        client={editingClient}
         onAddClient={(newClient) => {
           setClients((prev) => {
             const updated = [...prev, newClient];
@@ -968,6 +1031,7 @@ export default function ContadorReps() {
           setSelectedClientId(newClient.id);
           setShowAddClientModal(false);
         }}
+        onUpdateClient={handleUpdateClient}
       />
 
       {/* Modal para asignar ejercicios a cliente */}

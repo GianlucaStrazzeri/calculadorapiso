@@ -71,7 +71,8 @@ export default function TrainingPlanner() {
                 <div className="tp-controls">
                   <button className="tp-btn" onClick={() => openEdit(s)}>Editar</button>
                   <button className="tp-btn" onClick={() => setShowFeedbackFor(s.id)}>Feedback</button>
-                  <button className="tp-btn danger" onClick={() => remove(s.id)}>Eliminar</button>
+                    <button className="tp-btn" onClick={() => { const url = `${window.location.origin}/contadorreps/${encodeURIComponent(s.clientId)}?s=${encodeURIComponent(s.id)}`; if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(url).catch(()=>{ alert('No se pudo copiar al portapapeles'); }); } else { const ta=document.createElement('textarea'); ta.value=url; document.body.appendChild(ta); ta.select(); try{ document.execCommand('copy'); }catch(e){ } document.body.removeChild(ta); } alert('Enlace de sesión copiado'); }}>Copiar enlace</button>
+                    <button className="tp-btn danger" onClick={() => remove(s.id)}>Eliminar</button>
                 </div>
               </div>
               <div className="tp-session-meta">
