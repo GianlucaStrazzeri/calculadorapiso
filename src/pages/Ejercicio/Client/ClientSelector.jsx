@@ -74,20 +74,26 @@ export function ClientSelector({
     }
   };
 
-  const handleOpenLink = (id) => {
-    if (!id) return;
-    let path = `/contadorreps/${encodeURIComponent(id)}`;
+  const buildShareUrl = (id) => {
+    const path = `/contadorreps/${encodeURIComponent(id)}`;
+    let url = `${window.location.origin}${path}`;
     try {
       const clientAssignments = (exerciseAssignments || []).filter(a => String(a.clientId) === String(id));
       if (clientAssignments && clientAssignments.length > 0) {
         const payload = JSON.stringify(clientAssignments);
         const b64 = btoa(unescape(encodeURIComponent(payload))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-        path = `${path}?a=${b64}`;
+        url = `${url}?a=${b64}`;
       }
     } catch (e) {
-      // ignore and open simple link
+      // ignore
     }
-    window.open(path, "_blank");
+    return url;
+  };
+
+  const handleOpenLink = (id) => {
+    if (!id) return;
+    const url = buildShareUrl(id);
+    window.open(url, "_blank");
   };
 
   const filtered = useMemo(() => {
@@ -162,14 +168,14 @@ export function ClientSelector({
       {selectedClientId && (
         <div style={{ marginTop: 8, display: "flex", gap: 8, alignItems: "center" }}>
           <div style={{ color: "#6b7280", fontSize: "0.9rem" }}>
-            Link: <code style={{ background: "#f3f4f6", padding: "2px 6px", borderRadius: 6 }}>{`/contadorreps/${selectedClientId}`}</code>
+            Link: <code style={{ background: "#f3f4f6", padding: "2px 6px", borderRadius: 6 }}>{buildShareUrl(selectedClientId)}</code>
           </div>
           {!fixedClientId && (
             <button type="button" className="cr-btn" onClick={() => handleOpenLink(selectedClientId)} style={{ padding: "6px 8px" }}>
               Abrir
             </button>
           )}
-          <button type="button" className="cr-btn" onClick={() => handleCopyLink(selectedClientId)} style={{ padding: "6px 8px" }}>
+          <button type="button" className="cr-btn" onClick={() => { const u = buildShareUrl(selectedClientId); if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(u).catch(()=>handleCopyLink(selectedClientId)); } else { handleCopyLink(selectedClientId); } }} style={{ padding: "6px 8px" }}>
             Copiar enlace
           </button>
         </div>

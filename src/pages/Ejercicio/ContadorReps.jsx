@@ -419,6 +419,8 @@ export default function ContadorReps() {
           try { localStorage.setItem(ASSIGNMENTS_KEY, JSON.stringify(merged)); } catch (e) { /* ignore */ }
           return merged;
         });
+        // ensure assigned panel is visible when opening shared link
+        setAssignedOpen(true);
       }
     } catch (e) {
       // ignore parse errors
