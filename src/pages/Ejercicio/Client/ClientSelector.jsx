@@ -35,13 +35,26 @@ export function ClientSelector({
   fixedClientId = null, // if set, make the selector read-only and force this client
   // callback to open the Assign modal from outside (renders a small + inside the select)
   onOpenAssign = null,
+  // optional: pass current assignments so we can include them in the shared link
+  exerciseAssignments = [],
 }) {
   const [searchTerm, setSearchTerm] = useState("");
 
   const handleCopyLink = (id) => {
     if (!id) return;
     const path = `/contadorreps/${encodeURIComponent(id)}`;
-    const url = `${window.location.origin}${path}`;
+    let url = `${window.location.origin}${path}`;
+    try {
+      const clientAssignments = (exerciseAssignments || []).filter(a => String(a.clientId) === String(id));
+      if (clientAssignments && clientAssignments.length > 0) {
+        const payload = JSON.stringify(clientAssignments);
+        // base64url encode
+        const b64 = btoa(unescape(encodeURIComponent(payload))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+        url = `${url}?a=${b64}`;
+      }
+    } catch (e) {
+      // ignore encoding errors
+    }
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(url).catch(() => {
         // fallback handled below
@@ -63,7 +76,17 @@ export function ClientSelector({
 
   const handleOpenLink = (id) => {
     if (!id) return;
-    const path = `/contadorreps/${encodeURIComponent(id)}`;
+    let path = `/contadorreps/${encodeURIComponent(id)}`;
+    try {
+      const clientAssignments = (exerciseAssignments || []).filter(a => String(a.clientId) === String(id));
+      if (clientAssignments && clientAssignments.length > 0) {
+        const payload = JSON.stringify(clientAssignments);
+        const b64 = btoa(unescape(encodeURIComponent(payload))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+        path = `${path}?a=${b64}`;
+      }
+    } catch (e) {
+      // ignore and open simple link
+    }
     window.open(path, "_blank");
   };
 

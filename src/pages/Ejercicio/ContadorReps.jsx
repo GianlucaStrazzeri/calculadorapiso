@@ -395,6 +395,36 @@ export default function ContadorReps() {
     }
   }, [params]);
 
+  // If the URL includes encoded assignments (query param 'a'), decode and apply them
+  useEffect(() => {
+    if (!params || !params.clientId) return;
+    try {
+      const search = window.location.search || "";
+      const sp = new URLSearchParams(search);
+      const a = sp.get('a');
+      if (!a) return;
+      // base64url -> base64
+      const b64 = a.replace(/-/g, '+').replace(/_/g, '/');
+      const padded = b64 + '='.repeat((4 - (b64.length % 4)) % 4);
+      const json = decodeURIComponent(escape(atob(padded)));
+      const parsed = JSON.parse(json);
+      if (Array.isArray(parsed)) {
+        // ensure assignments reference this clientId (override clientId if missing)
+        const id = decodeURIComponent(params.clientId);
+        const normalized = parsed.map((x) => ({ ...x, clientId: x.clientId || id }));
+        setExerciseAssignments((prev) => {
+          // replace assignments for this client with decoded ones
+          const others = (prev || []).filter((p) => String(p.clientId) !== String(id));
+          const merged = [...others, ...normalized];
+          try { localStorage.setItem(ASSIGNMENTS_KEY, JSON.stringify(merged)); } catch (e) { /* ignore */ }
+          return merged;
+        });
+      }
+    } catch (e) {
+      // ignore parse errors
+    }
+  }, [params]);
+
   const isPatientPublicView = Boolean(params && params.clientId);
 
   // Precompute client assignments for the selected client (avoid IIFE in JSX)
@@ -524,6 +554,7 @@ export default function ContadorReps() {
                     disableAdd={isPatientPublicView}
                     fixedClientId={isPatientPublicView ? selectedClientId : null}
                     onOpenAssign={() => setShowAssignModal(true)}
+                    exerciseAssignments={exerciseAssignments}
                 />
                   {isPatientPublicView && selectedClientId && (
                     <button
