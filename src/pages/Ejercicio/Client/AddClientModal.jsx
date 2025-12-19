@@ -10,7 +10,6 @@ export function AddClientModal({ isOpen, onClose, onAddClient, client = null, on
 
   const CLIENTS_KEY = "cr_clients_v1";
 
-  if (!isOpen) return null;
 
   // keep inputs in sync when client prop changes (open edit modal)
   React.useEffect(() => {
@@ -21,6 +20,8 @@ export function AddClientModal({ isOpen, onClose, onAddClient, client = null, on
       setNota(client.nota || "");
     }
   }, [client]);
+
+  if (!isOpen) return null;
 
   const handleSubmit = (e) => {
     e.preventDefault();
