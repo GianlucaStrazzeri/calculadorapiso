@@ -1,5 +1,5 @@
 :root{
-  --bg: #ffffff;
+  --bg: var(--card-bg);
   --muted: #6b7280;
   --border: #e6e9ee;
   --primary-1: #2563eb;
@@ -9,27 +9,32 @@
 
 /* Mobile-first layout */
 .tp-container{
-  padding: 16px;
+  padding: 14px;
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
-  color: #111827;
+  color: #0f172a;
   background: transparent;
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  box-sizing: border-box;
 }
 
-.tp-title{font-size:1.25rem;margin-bottom:10px;text-align:left}
-
-.tp-actions{display:flex;gap:8px;justify-content:flex-start}
-.tp-btn{padding:10px 14px;border-radius:999px;border:1px solid var(--border);background:var(--bg);color:#374151;font-weight:600;font-size:0.95rem;cursor:pointer}
+.tp-title{font-size:1.5rem;margin-bottom:10px;font-weight:700;text-align:left}
+  color: var(--text, #0f172a);
+.tp-actions{display:flex;gap:10px;justify-content:flex-start;align-items:center;flex-wrap:wrap}
+.tp-btn{padding:12px 14px;border-radius:12px;border:1px solid var(--border);background:var(--bg);color:#1f2937;font-weight:700;font-size:1rem;cursor:pointer;min-height:44px;box-sizing:border-box}
 .tp-btn.primary{background:linear-gradient(135deg,var(--primary-1),var(--primary-2));color:white;box-shadow:0 8px 20px rgba(37,99,235,0.15);border:none}
 .tp-btn.danger{background:transparent;color:var(--danger);border-color:transparent}
 
 .tp-grid{display:grid;grid-template-columns:1fr;gap:12px}
+.tp-btn{padding:12px 14px;border-radius:12px;border:1px solid var(--card-border,#e6eef8);background:var(--card-bg);color:var(--text,#1f2937);font-weight:700;font-size:1rem;cursor:pointer;min-height:44px;box-sizing:border-box}
 
-.tp-session-card{border:1px solid var(--border);padding:10px;margin-bottom:8px;border-radius:8px;background:var(--bg)}
-.tp-session-top{display:flex;justify-content:space-between;align-items:flex-start}
-.tp-controls{display:flex;gap:8px;align-items:center}
-.tp-controls .tp-btn{padding:8px 10px;font-size:0.85rem}
-.tp-muted{color:var(--muted);font-size:0.9rem;margin-top:6px}
-.tp-session-meta{margin-top:8px;color:#374151;font-size:0.95rem}
+.tp-session-card{border:1px solid var(--card-border,#f3f4f6);padding:12px;margin-bottom:10px;border-radius:10px;background:var(--card-bg);box-shadow:var(--elevated-shadow,0 6px 18px rgba(15, 23, 42, 0.03))}
+.tp-session-top{display:flex;flex-direction:column;justify-content:flex-start;align-items:stretch;gap:8px}
+.tp-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.tp-controls .tp-btn{padding:10px 12px;font-size:0.95rem}
+.tp-muted{color:var(--muted);font-size:0.95rem;margin-top:4px}
+.tp-session-meta{margin-top:8px;color:#111827;font-size:0.95rem;display:flex;gap:12px;flex-wrap:wrap}
 
 .tp-aside{border:1px solid var(--border);padding:10px;border-radius:8px;background:var(--bg)}
 .tp-summary{margin-bottom:10px}
@@ -40,21 +45,35 @@
 .tp-empty{color:var(--muted);padding:8px}
 
 /* Modal overlay */
-.tp-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;z-index:2000;padding:12px}
-.tp-modal-content{width:min(980px,96%);background:#fff;border-radius:8px;box-shadow:0 12px 32px rgba(2,6,23,0.08);max-height:90vh;overflow:auto}
+.tp-modal-overlay{position:fixed;inset:0;background:rgba(2,6,23,0.45);display:flex;align-items:center;justify-content:center;z-index:2000;padding:12px}
+.tp-modal-content{width:min(980px,96%);background:var(--card-bg);border-radius:12px;box-shadow:0 12px 32px rgba(2,6,23,0.08);max-height:90vh;overflow:auto}
 .tp-modal-content.small{width:min(680px,96%)}
+
+/* Mobile: bottom sheet style for modals to feel native */
+@media (max-width: 520px){
+  .tp-modal-overlay{align-items:flex-end;padding:0}
+  .tp-modal-content{width:100%;border-bottom-left-radius:0;border-bottom-right-radius:0;border-top-left-radius:12px;border-top-right-radius:12px;max-height:80vh;margin:0}
+}
 
 /* Responsive: desktop/tablet */
 @media (min-width: 760px){
   .tp-grid{grid-template-columns: 1fr 380px;}
+  .tp-session-top{flex-direction:row;align-items:flex-start}
+  .tp-controls{justify-self:flex-end}
 }
 
 /* Small screens: stack control buttons vertically for easier tapping */
-@media (max-width: 420px){
-  .tp-controls{flex-direction:column;align-items:flex-end}
+@media (max-width: 600px){
+  .tp-controls{flex-direction:column;align-items:stretch}
   .tp-actions{flex-direction:column;gap:10px}
   .tp-btn{width:100%;box-sizing:border-box}
+  .tp-session-meta{flex-direction:column;align-items:flex-start}
 }
 
 /* Accessibility tweaks */
 .tp-btn:focus{outline:3px solid rgba(37,99,235,0.15);outline-offset:2px}
+
+/* Small tweaks for better tap targets and spacing */
+.tp-session-card strong{font-size:1.05rem}
+.tp-session-card .tp-muted{font-size:0.9rem}
+.tp-controls .tp-btn.danger{border:1px solid rgba(239,68,68,0.08)}

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import trainingStorage, { createSessionDraft } from './trainingStorage';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import SessionForm from './SessionForm';
 import FeedbackForm from './FeedbackForm';
 import TrainingCharts from '../../components/TrainingCharts';
@@ -16,9 +16,24 @@ export default function TrainingPlanner() {
   const [editing, setEditing] = useState(null);
   const [showFeedbackFor, setShowFeedbackFor] = useState(null);
   const [showSummary, setShowSummary] = useState(Boolean(openSummaryParam));
+  const [clientsMap, setClientsMap] = useState({});
+  const navigate = useNavigate();
 
   useEffect(() => {
     setSessions(trainingStorage.listSessions().sort((a,b)=>a.date.localeCompare(b.date)));
+  }, []);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('cr_clients_v1');
+      if (raw) {
+        const arr = JSON.parse(raw);
+        const map = (arr || []).reduce((acc, c) => { acc[c.id] = c.nombre || c.name || ''; return acc; }, {});
+        setClientsMap(map);
+      }
+    } catch (e) {
+      console.warn('No se pudieron cargar clientes en TrainingPlanner', e);
+    }
   }, []);
 
   function refresh() {
@@ -53,6 +68,7 @@ export default function TrainingPlanner() {
     <div className="tp-container" style={{ padding: 12 }}>
       <h2 className="tp-title">Planificador de entrenamientos</h2>
       <div className="tp-actions" style={{ marginBottom: 12 }}>
+        <button className="tp-btn" onClick={() => navigate('/contadorreps')} style={{ marginRight: 8 }}>← Volver</button>
         <button className="tp-btn primary" onClick={openNew}>Crear sesión planificada</button>
         <button className="tp-btn" onClick={() => setShowSummary(true)} style={{ marginLeft: 8 }}>Resumen</button>
       </div>
@@ -67,6 +83,11 @@ export default function TrainingPlanner() {
                 <div>
                   <strong>{s.date}</strong>
                   <div className="tp-muted">{s.objectives}</div>
+                  {s.clientId && (
+                    <div style={{ marginTop: 6, fontSize: '0.9rem', color: '#374151' }}>
+                      Asignado a: <strong>{clientsMap[s.clientId] || s.clientId}</strong>
+                    </div>
+                  )}
                 </div>
                 <div className="tp-controls">
                   <button className="tp-btn" onClick={() => openEdit(s)}>Editar</button>
@@ -118,6 +139,16 @@ export default function TrainingPlanner() {
               <div className="tp-charts" style={{ marginTop: 12 }}>
                 <h4>Visor rápido</h4>
                 <TrainingCharts sessions={sessions} />
+                <div style={{ marginTop: 12 }}>
+                  <h5>Sesiones recientes</h5>
+                  <ul style={{ margin: 0, paddingLeft: 16 }}>
+                    {sessions.slice(0,6).map((ss) => (
+                      <li key={ss.id} style={{ marginBottom: 6 }}>
+                        {ss.date} — {clientsMap[ss.clientId] || ss.clientId || 'Sin cliente'} — { (ss.exercises || []).length } ejercicios
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
             </div>
           </div>

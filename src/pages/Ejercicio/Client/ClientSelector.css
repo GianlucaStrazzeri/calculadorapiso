@@ -3,12 +3,12 @@
 */
 
 .cr-client-selector {
-  background: #ffffff;
-  border: 1px solid #e4e7ec;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
   border-radius: 12px;
-  padding: 16px 18px;
+  padding: 14px 16px;
   margin-bottom: 16px;
-  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+  box-shadow: var(--elevated-shadow);
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -26,7 +26,7 @@
   margin: 0;
   font-size: 1rem;
   font-weight: 600;
-  color: #111827;
+  color: var(--text);
 }
 
 /* Botón "Añadir cliente" */
@@ -51,10 +51,10 @@
 }
 
 .cr-client-selector .cr-btn-secondary {
-  background: #f9fafb;
-  color: #2563eb;
-  border-color: #bfdbfe;
-  box-shadow: 0 3px 10px rgba(37, 99, 235, 0.12);
+  background: var(--surface);
+  color: var(--primary);
+  border-color: rgba(37,99,235,0.08);
+  box-shadow: 0 3px 10px rgba(37, 99, 235, 0.08);
 }
 
 .cr-client-selector .cr-btn-secondary:hover {
@@ -73,7 +73,7 @@
 .cr-client-empty {
   margin: 4px 0 0;
   font-size: 0.9rem;
-  color: #6b7280;
+  color: var(--muted);
   font-style: italic;
   line-height: 1.4;
 }
@@ -85,17 +85,17 @@
   padding: 8px 10px;
   font-size: 0.92rem;
   border-radius: 10px;
-  border: 1px solid #d1d5db;
-  background-color: #f9fafb;
-  color: #111827;
+  border: 1px solid var(--card-border);
+  background-color: var(--card-bg);
+  color: var(--text);
   outline: none;
   transition:
     border-color 0.15s ease,
     box-shadow 0.15s ease,
     background-color 0.15s ease;
-  appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
+  appearance: none;
   background-image: linear-gradient(45deg, transparent 50%, #9ca3af 50%),
     linear-gradient(135deg, #9ca3af 50%, transparent 50%);
   background-position:
@@ -122,23 +122,23 @@
   transform: translateY(-50%);
   border-radius: 999px;
   padding: 4px 8px;
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  color: #374151;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  color: var(--text);
   font-size: 0.95rem;
   cursor: pointer;
   box-shadow: 0 2px 6px rgba(15, 23, 42, 0.06);
 }
 
 .cr-select-add-btn:hover {
-  background: #f3f4f6;
+  background: var(--surface);
   transform: translateY(-50%) scale(1.02);
 }
 
 .cr-select:focus {
-  border-color: #2563eb;
-  background-color: #ffffff;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  border-color: var(--primary);
+  background-color: var(--card-bg);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
 .cr-select:disabled {

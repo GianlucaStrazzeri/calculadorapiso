@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import trainingStorage, { createSessionDraft } from './trainingStorage';
 import { EXERCISES as BASE_EXERCISES } from './exercisesConfig';
 import './SessionForm.css';
@@ -7,6 +7,7 @@ export default function SessionForm({ initial = null, onClose = () => {}, onSave
   const draft = initial || createSessionDraft();
   const [session, setSession] = useState(draft);
   const [searchTerm, setSearchTerm] = useState('');
+  const [clientsMap, setClientsMap] = useState({});
   const term = String(searchTerm || '').trim().toLowerCase();
   const filteredTemplates = term
     ? BASE_EXERCISES.filter((e) => {
@@ -54,9 +55,29 @@ export default function SessionForm({ initial = null, onClose = () => {}, onSave
     setSession((s) => ({ ...s, exercises: (s.exercises || []).filter((_, idx) => idx !== i) }));
   }
 
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('cr_clients_v1');
+      if (raw) {
+        const arr = JSON.parse(raw);
+        const map = (arr || []).reduce((acc, c) => { acc[c.id] = c.nombre || c.name || ''; return acc; }, {});
+        setClientsMap(map);
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, []);
+
   return (
     <div className="sf-container">
       <h3 className="sf-title">{initial ? 'Editar sesión' : 'Crear sesión planificada'}</h3>
+
+      {session.clientId && (
+        <div className="sf-field sf-client-info">
+          <label className="sf-label">Paciente asignado</label>
+          <div className="sf-client-name">{clientsMap[session.clientId] || session.clientId}</div>
+        </div>
+      )}
 
       <div className="sf-field">
         <label className="sf-label">Fecha</label>

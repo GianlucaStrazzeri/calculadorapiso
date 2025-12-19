@@ -1,13 +1,15 @@
 #root {
-  max-width: 1280px;
+  max-width: 980px;
   margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  padding: 1rem;
+  text-align: left;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .logo {
-  height: 6em;
-  padding: 1.5em;
+  height: 4.5em;
+  padding: 0.75em;
   will-change: filter;
   transition: filter 300ms;
 }
@@ -33,8 +35,14 @@
   }
 }
 
+@media (min-width: 760px){
+  #root{ padding: 2rem; }
+  .logo{ height: 6em; padding: 1.5em }
+  .card{ padding: 2em }
+}
+
 .card {
-  padding: 2em;
+  padding: 1rem;
 }
 
 .read-the-docs {

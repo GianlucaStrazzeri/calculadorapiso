@@ -75,12 +75,15 @@ export default function ContadorReps() {
   const [exerciseAssignments, setExerciseAssignments] = useState([]);
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [showPublicFeedback, setShowPublicFeedback] = useState(false);
+  const [importedAssignmentsPresent, setImportedAssignmentsPresent] = useState(false);
+  const [importConfirm, setImportConfirm] = useState({ open: false, action: null });
 
   // TIMER
   const [timeLeft, setTimeLeft] = useState(DEFAULT_SECONDS);
   const [timerRunning, setTimerRunning] = useState(false);
   const timerRef = useRef(null);
   const audioCtxRef = useRef(null);
+  const skipPersistAssignmentsRef = useRef(false);
 
   // Modal
   const [showAddExerciseModal, setShowAddExerciseModal] = useState(false);
@@ -160,7 +163,9 @@ export default function ContadorReps() {
   // Persistir asignaciones
   useEffect(() => {
     try {
-      localStorage.setItem(ASSIGNMENTS_KEY, JSON.stringify(exerciseAssignments));
+      if (!skipPersistAssignmentsRef.current) {
+        localStorage.setItem(ASSIGNMENTS_KEY, JSON.stringify(exerciseAssignments));
+      }
     } catch (e) {
       console.warn("No se pudieron guardar asignaciones", e);
     }
@@ -401,9 +406,20 @@ export default function ContadorReps() {
   useEffect(() => {
     if (!params || !params.clientId) return;
     try {
+      // try to read from query param first, fallback to fragment (some mobile apps strip query params)
       const search = window.location.search || "";
       const sp = new URLSearchParams(search);
-      const a = sp.get('a');
+      let a = sp.get('a');
+      let sParam = sp.get('s');
+      if (!a && window.location.hash) {
+        // hash may contain a=... or s=... like #a=BASE64 or #s=SESSION_ID
+        const hash = window.location.hash.replace(/^#/, '');
+        const hp = new URLSearchParams(hash);
+        if (!a) a = hp.get('a');
+        if (!sParam) sParam = hp.get('s');
+      }
+      const s = sParam;
+      if (!a && !s) return;
       if (!a) return;
       // base64url -> base64
       const b64 = a.replace(/-/g, '+').replace(/_/g, '/');
@@ -413,16 +429,38 @@ export default function ContadorReps() {
       if (Array.isArray(parsed)) {
         // ensure assignments reference this clientId (override clientId if missing)
         const id = decodeURIComponent(params.clientId);
-        const normalized = parsed.map((x) => ({ ...x, clientId: x.clientId || id }));
+        const normalized = parsed.map((x) => ({ ...x, clientId: x.clientId || id, _importedFromUrl: true }));
+        // set assignments only in memory (do not persist to localStorage)
+        skipPersistAssignmentsRef.current = true;
         setExerciseAssignments((prev) => {
-          // replace assignments for this client with decoded ones
           const others = (prev || []).filter((p) => String(p.clientId) !== String(id));
           const merged = [...others, ...normalized];
-          try { localStorage.setItem(ASSIGNMENTS_KEY, JSON.stringify(merged)); } catch (e) { /* ignore */ }
           return merged;
         });
+        // re-enable persistence after a short delay so further changes persist normally
+        setTimeout(() => { skipPersistAssignmentsRef.current = false; }, 3000);
         // ensure assigned panel is visible when opening shared link
         setAssignedOpen(true);
+        setImportedAssignmentsPresent(true);
+        // if a specific session id was included, try to auto-import it after assignments are set
+        if (s) {
+          try {
+            const sess = trainingStorage.listSessions().find((x) => String(x.id) === String(s));
+            if (sess && Array.isArray(sess.exercises) && sess.exercises.length > 0) {
+              const entries = sess.exercises.map((ex) => ({
+                id: Date.now() + Math.floor(Math.random()*1000),
+                exerciseId: ex.exerciseId || ex.name || 'custom',
+                exerciseLabel: ex.name || (([...BASE_EXERCISES, ...customExercises].find(e=>e.id===ex.exerciseId)||{}).label) || ex.exerciseId || ex.name,
+                reps: ex.reps || ex.sets || 0,
+                weightKg: ex.load || 0,
+                volume: (ex.load || 0) * (ex.reps || ex.sets || 0),
+                clientId: decodeURIComponent(params.clientId),
+                date: new Date(),
+              }));
+              setSessionHistory((prev) => [...entries, ...prev].slice(0,100));
+            }
+          } catch (e) { /* ignore */ }
+        }
       }
     } catch (e) {
       // ignore parse errors
@@ -517,6 +555,30 @@ export default function ContadorReps() {
     });
     setSelectedExercise(newExercise);
     setShowAddExerciseModal(false);
+  }
+
+  function performImportConfirm() {
+    const action = importConfirm.action;
+    setImportConfirm({ open: false, action: null });
+    if (action === 'save') {
+      try {
+        setExerciseAssignments((prev) => {
+          const updated = (prev || []).map(a => {
+            const copy = { ...a };
+            delete copy._importedFromUrl;
+            return copy;
+          });
+          try { localStorage.setItem(ASSIGNMENTS_KEY, JSON.stringify(updated)); } catch (e) { }
+          return updated;
+        });
+        setImportedAssignmentsPresent(false);
+      } catch (e) {
+        console.warn('No se pudieron guardar las asignaciones', e);
+      }
+    } else if (action === 'reject') {
+      setExerciseAssignments((prev) => (prev || []).filter(a => !a._importedFromUrl));
+      setImportedAssignmentsPresent(false);
+    }
   }
 
   // Client CRUD handlers
@@ -696,10 +758,16 @@ export default function ContadorReps() {
               <div style={{ marginTop: 12 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                   <h4 style={{ margin: 0 }}>Trabajo asignado</h4>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    <button className="cr-btn" onClick={() => setShowPublicFeedback(true)}>Feedback</button>
-                    <button className="cr-btn" onClick={() => setAssignedOpen((s) => !s)}>{assignedOpen ? 'Ocultar' : 'Mostrar'}</button>
-                  </div>
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        <button className="cr-btn" onClick={() => setShowPublicFeedback(true)}>Feedback</button>
+                        <button className="cr-btn" onClick={() => setAssignedOpen((s) => !s)}>{assignedOpen ? 'Ocultar' : 'Mostrar'}</button>
+                        {importedAssignmentsPresent && (
+                          <>
+                            <button className="cr-btn cr-btn-primary" onClick={() => setImportConfirm({ open: true, action: 'save' })}>Guardar asignaciones</button>
+                            <button className="cr-btn" onClick={() => setImportConfirm({ open: true, action: 'reject' })}>Rechazar importadas</button>
+                          </>
+                        )}
+                      </div>
                 </div>
                 {assignedOpen && (
                   <div style={{ padding: 12, background: '#fff', border: '1px solid #e6eef8', borderRadius: 8 }}>
@@ -993,6 +1061,29 @@ export default function ContadorReps() {
                   setShowTabataModal(false);
                 }}
               />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Confirmation modal for imported assignments */}
+      {importConfirm.open && (
+        <div className="cr-modal-backdrop" onClick={() => setImportConfirm({ open: false, action: null })}>
+          <div className="cr-modal" style={{ maxWidth: 520 }} onClick={(e) => e.stopPropagation()}>
+            <div className="cr-modal-header">
+              <h3>{importConfirm.action === 'save' ? 'Guardar asignaciones' : 'Rechazar asignaciones'}</h3>
+              <button type="button" className="cr-modal-close" onClick={() => setImportConfirm({ open: false, action: null })}>✕</button>
+            </div>
+            <div className="cr-modal-body">
+              {importConfirm.action === 'save' ? (
+                <p>¿Deseas guardar permanentemente las asignaciones importadas en este dispositivo?</p>
+              ) : (
+                <p>¿Deseas descartar las asignaciones importadas? Esta acción no podrá deshacerse.</p>
+              )}
+            </div>
+            <div className="cr-modal-footer">
+              <button type="button" className="cr-btn cr-btn-ghost" onClick={() => setImportConfirm({ open: false, action: null })}>Cancelar</button>
+              <button type="button" className="cr-btn cr-btn-primary" onClick={performImportConfirm}>{importConfirm.action === 'save' ? 'Confirmar y guardar' : 'Confirmar y descartar'}</button>
             </div>
           </div>
         </div>

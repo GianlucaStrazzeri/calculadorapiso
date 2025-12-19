@@ -701,7 +701,7 @@ function DecisionVivienda() {
         style={{
           width: "100%",
           maxWidth: "1100px",
-          background: "#ffffff",
+          background: 'var(--card-bg)',
           borderRadius: "20px",
           boxShadow: "0 18px 45px rgba(15, 23, 42, 0.12)",
           padding: "24px 24px 32px",
@@ -2504,8 +2504,8 @@ const cardMini = {
   borderRadius: "14px",
   padding: "12px 14px",
   background:
-    "radial-gradient(circle at top left, #eff6ff, #ffffff 45%, #f9fafb)",
-  border: "1px solid #e5e7eb",
+    "radial-gradient(circle at top left, #eff6ff, var(--card-bg) 45%, #f9fafb)",
+  border: "1px solid var(--card-border)",
   display: "flex",
   flexDirection: "column",
   gap: "4px",

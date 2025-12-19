@@ -132,7 +132,7 @@ export default function ExerciseSelector({
               fontSize: "0.8rem",
               borderRadius: 999,
               border: "1px solid #e2e8f0",
-              background: "#ffffff",
+              background: 'var(--card-bg)',
               color: "#0f172a",
             }}
           >
@@ -151,7 +151,7 @@ export default function ExerciseSelector({
             padding: 8,
             borderRadius: 12,
             border: "1px solid #e2e8f0",
-            background: "#ffffff",
+            background: 'var(--card-bg)',
           }}
         >
               <div className="cr-exercise-search-row" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

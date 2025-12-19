@@ -26,8 +26,8 @@
 .dv-card-mini {
   border-radius: 14px;
   padding: 12px 14px;
-  background: radial-gradient(circle at top left, #eff6ff, #ffffff 45%, #f9fafb);
-  border: 1px solid #e5e7eb;
+  background: radial-gradient(circle at top left, #eff6ff, var(--card-bg) 45%, #f9fafb);
+  border: 1px solid var(--card-border);
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -58,7 +58,7 @@
 .dv-card {
   max-width: 1100px;
   margin: 0 auto;
-  background: #fff;
+  background: var(--card-bg);
   border-radius: 16px;
   padding: 20px;
   box-shadow: 0 10px 30px rgba(15,23,42,0.08);
@@ -77,7 +77,7 @@
 .dv-note { font-size:0.8rem; color:#9ca3af; }
 
 .dv-origin-grid { display:grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap:12px; }
-.dv-origin { border:1px solid #eef2ff; padding:12px; border-radius:10px; background:linear-gradient(180deg,#ffffff,#fbfdff); }
+.dv-origin { border:1px solid #eef2ff; padding:12px; border-radius:10px; background:linear-gradient(180deg,var(--card-bg),#fbfdff); }
 .dv-origin h4 { margin:0 0 8px 0; }
 
 .dv-market-row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
@@ -100,7 +100,7 @@
 .dv-card {
   width: 100%;
   max-width: 1100px;
-  background: #ffffff;
+  background: var(--card-bg);
   border-radius: 20px;
   box-shadow: 0 18px 45px rgba(15, 23, 42, 0.06);
   padding: 24px;

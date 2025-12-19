@@ -4,6 +4,8 @@
 .sf-title{font-size:1.1rem;margin-bottom:10px}
 .sf-field{margin-bottom:10px;display:flex;flex-direction:column;gap:6px}
 .sf-label{font-size:0.9rem;color:#374151}
+.sf-client-info{margin-bottom:8px}
+.sf-client-name{font-size:0.95rem;color:#0f172a;font-weight:600}
 .sf-input{padding:10px;border-radius:8px;border:1px solid #e6e9ee;background:transparent;font-size:0.95rem}
 .sf-input.small{width:72px}
 .sf-textarea{padding:10px;border-radius:8px;border:1px solid #e6e9ee;resize:vertical}

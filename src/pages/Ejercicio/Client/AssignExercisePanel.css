@@ -4,14 +4,14 @@
 
 /* PANEL PRINCIPAL */
 .cr-assign-panel {
-  background: #ffffff;
+  background: var(--card-bg);
   border-radius: 16px;
-  border: 1px solid #e5e7eb;
-  padding: 18px 20px;
-  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.07);
+  border: 1px solid var(--card-border);
+  padding: 16px 18px;
+  box-shadow: var(--elevated-shadow);
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
   margin-top: 12px;
 }
 
@@ -19,14 +19,14 @@
   margin: 0;
   font-size: 1.02rem;
   font-weight: 600;
-  color: #111827;
+  color: var(--text);
 }
 
 /* TEXTO SUAVE / INFORMACIÓN */
 .cr-muted {
   margin: 4px 0 0;
   font-size: 0.9rem;
-  color: #6b7280;
+  color: var(--muted);
 }
 
 /* FORMULARIO DE ASIGNACIÓN */
@@ -56,11 +56,11 @@
 .cr-textarea {
   width: 100%;
   border-radius: 10px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--card-border);
   padding: 8px 10px;
   font-size: 0.9rem;
-  color: #111827;
-  background-color: #f9fafb;
+  color: var(--text);
+  background-color: var(--card-bg);
   outline: none;
   transition:
     border-color 0.15s ease,
@@ -85,9 +85,9 @@
 .cr-select:focus,
 .cr-input:focus,
 .cr-textarea:focus {
-  border-color: #2563eb;
-  background-color: #ffffff;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+  border-color: var(--primary);
+  background-color: var(--card-bg);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
 .cr-input::placeholder,
@@ -132,10 +132,10 @@
 
 /* PRIMARIO (Asignar ejercicio) */
 .cr-btn-primary {
-  background: #2563eb;
-  color: #ffffff;
-  border-color: #1d4ed8;
-  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+  background: var(--primary);
+  color: var(--on-primary);
+  border-color: transparent;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.18);
 }
 
 .cr-btn-primary:hover {
@@ -152,10 +152,10 @@
 
 /* SECUNDARIO (Usar en sesión) */
 .cr-btn-secondary {
-  background: #f9fafb;
-  color: #2563eb;
-  border-color: #bfdbfe;
-  box-shadow: 0 3px 10px rgba(37, 99, 235, 0.14);
+  background: var(--surface);
+  color: var(--primary);
+  border-color: var(--card-border);
+  box-shadow: 0 3px 8px rgba(37, 99, 235, 0.06);
 }
 
 .cr-btn-secondary:hover {
@@ -207,9 +207,9 @@
 .cr-batch-list {
   margin-top: 8px;
   padding: 8px;
-  border: 1px dashed #e5e7eb;
+  border: 1px dashed var(--card-border);
   border-radius: 10px;
-  background: #ffffff;
+  background: var(--card-bg);
 }
 
 .cr-batch-list h5 {
@@ -234,8 +234,8 @@
   gap: 12px;
   padding: 8px;
   border-radius: 8px;
-  background: #f9fafb;
-  border: 1px solid #eef2f7;
+  background: var(--surface);
+  border: 1px solid var(--card-border);
 }
 
 /* UL / LI */
@@ -251,8 +251,8 @@
 .cr-assign-item {
   padding: 10px 12px;
   border-radius: 12px;
-  border: 1px solid #e5e7eb;
-  background: #f9fafb;
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -272,7 +272,7 @@
   align-items: center;
   gap: 8px;
   font-size: 0.92rem;
-  color: #111827;
+  color: var(--text);
 }
 
 .cr-assign-title strong {
@@ -301,7 +301,7 @@
   flex-wrap: wrap;
   gap: 6px;
   font-size: 0.8rem;
-  color: #4b5563;
+  color: var(--muted);
 }
 
 /* BOTONES DE LA DERECHA */

@@ -29,7 +29,7 @@ function AppsMenu() {
 
   return (
     <div ref={ref} style={{ position: "relative" }}>
-      <button
+        <button
         type="button"
         aria-expanded={open}
         onClick={() => setOpen((s) => !s)}
@@ -37,7 +37,7 @@ function AppsMenu() {
           padding: "10px 18px",
           borderRadius: "999px",
           border: "1px solid #d1d5db",
-          background: "#ffffff",
+            background: 'var(--card-bg)',
           color: "#374151",
           fontWeight: 600,
           fontSize: "0.95rem",
@@ -47,7 +47,7 @@ function AppsMenu() {
         Apps ▾
       </button>
 
-      {open && (
+        {open && (
         <div
           role="menu"
           style={{
@@ -55,7 +55,7 @@ function AppsMenu() {
             top: "calc(100% + 8px)",
             right: 0,
             minWidth: 220,
-            background: "#fff",
+            background: 'var(--card-bg)',
             border: "1px solid #e5e7eb",
             borderRadius: 8,
             boxShadow: "0 8px 24px rgba(15,23,42,0.08)",
@@ -147,11 +147,11 @@ function Home() {
         padding: "24px",
       }}
     >
-      <div
+        <div
         style={{
           maxWidth: "640px",
           width: "100%",
-          background: "#ffffff",
+          background: 'var(--card-bg)',
           borderRadius: "20px",
           boxShadow: "0 18px 45px rgba(15, 23, 42, 0.12)",
           padding: "24px 24px 32px",
@@ -222,7 +222,7 @@ function App() {
           width: "100%",
           padding: "10px 18px",
           borderBottom: "1px solid #e5e7eb",
-          backgroundColor: "#ffffff",
+          backgroundColor: 'var(--card-bg)',
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",

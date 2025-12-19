@@ -6,8 +6,8 @@
   padding: 8px 14px;
   border-radius: 999px;
   border: none;
-  background: #2563eb;
-  color: #ffffff;
+  background: var(--primary);
+  color: var(--on-primary);
   font-weight: 500;
   font-size: 0.9rem;
   cursor: pointer;
@@ -15,7 +15,7 @@
     background-color 0.15s ease,
     transform 0.08s ease,
     box-shadow 0.15s ease;
-  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.35);
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.18);
 }
 
 .wpg-open-btn:hover {
@@ -43,9 +43,9 @@
   width: 100%;
   max-width: 900px;
   max-height: 90vh;
-  background: #ffffff;
+  background: var(--card-bg);
   border-radius: 16px;
-  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.35);
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.32);
   display: flex;
   flex-direction: column;
   padding: 16px 18px;
@@ -122,12 +122,12 @@
 .wpg-input,
 .wpg-textarea {
   border-radius: 8px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--card-border);
   padding: 6px 8px;
   font-size: 0.9rem;
-  color: #111827;
+  color: var(--text);
   outline: none;
-  background: #f9fafb;
+  background: var(--surface);
   transition:
     border-color 0.15s ease,
     box-shadow 0.15s ease,
@@ -141,9 +141,9 @@
 
 .wpg-input:focus,
 .wpg-textarea:focus {
-  border-color: #2563eb;
-  background-color: #ffffff;
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.18);
+  border-color: var(--primary);
+  background-color: var(--card-bg);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
 }
 
 /* ERRORES */
@@ -184,10 +184,10 @@
 }
 
 .wpg-btn-primary {
-  background: #2563eb;
-  color: #ffffff;
-  border-color: #1d4ed8;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+  background: var(--primary);
+  color: var(--on-primary);
+  border-color: transparent;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.18);
 }
 
 .wpg-btn-primary:hover:not(:disabled) {
@@ -201,9 +201,9 @@
 }
 
 .wpg-btn-ghost {
-  background: #ffffff;
-  color: #4b5563;
-  border-color: #d1d5db;
+  background: var(--card-bg);
+  color: var(--text);
+  border-color: var(--card-border);
 }
 
 .wpg-btn-ghost:hover {
@@ -235,10 +235,10 @@
 
 .wpg-result-box {
   border-radius: 8px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--card-border);
   padding: 10px;
   font-size: 0.9rem;
-  background: #f9fafb;
+  background: var(--surface);
   max-height: 50vh;
   overflow: auto;
 }

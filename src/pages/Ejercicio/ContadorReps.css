@@ -1,11 +1,18 @@
 /* ContadorReps.css - Estilos para el contador de repeticiones */
 
 .cr-container {
-  max-width: 960px;
+  /* Mobile-first: full width on small screens, centered on larger */
+  width: 100%;
+  max-width: 980px;
   margin: 0 auto;
-  padding: 1.5rem;
+  padding: 0.9rem 0.9rem;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  color: #0f172a;
+  color: var(--text);
+  box-sizing: border-box;
+}
+
+@media (min-width: 760px) {
+  .cr-container { padding: 1.25rem 1rem; }
 }
 
 .cr-header {
@@ -27,9 +34,10 @@
 }
 
 .cr-layout {
-  display: grid;
-  grid-template-columns: 1.2fr 1fr;
-  gap: 1.5rem;
+  /* Mobile-first: stacked layout */
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .cr-left-column {
@@ -60,8 +68,8 @@
 .cr-exercise-card {
   border-radius: 1rem;
   padding: 0.75rem 0.9rem;
-  border: 1px solid #e2e8f0;
-  background-color: #ffffff;
+  border: 1px solid var(--card-border);
+  background-color: var(--card-bg);
   display: flex;
   align-items: center;
   gap: 0.6rem;
@@ -72,7 +80,7 @@
 }
 
 .cr-exercise-card--active {
-  background-color: #f8fafc;
+  background-color: var(--surface);
   box-shadow: 0 8px 16px rgba(15, 23, 42, 0.1);
 }
 
@@ -142,14 +150,15 @@
 /* Panel contador */
 
 .cr-counter-panel {
-  border-radius: 1.25rem;
-  background: linear-gradient(135deg, #0f172a, #1e293b);
-  padding: 1.25rem 1.5rem;
-  color: #e5e7eb;
+  border-radius: 12px;
+  /* lighter gradient to reduce perceived darkness */
+  background: linear-gradient(135deg, var(--primary-variant), #12314a);
+  padding: 12px;
+  color: var(--on-primary);
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.65);
+  gap: 10px;
+  box-shadow: var(--elevated-shadow);
 }
 
 .cr-counter-header {
@@ -163,7 +172,7 @@
   font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: #cbd5f5;
+  color: rgba(255,255,255,0.88);
   margin-bottom: 0.25rem;
 }
 
@@ -175,7 +184,7 @@
 .cr-series-info {
   text-align: right;
   font-size: 0.8rem;
-  color: #a5b4fc;
+  color: rgba(255,255,255,0.9);
 }
 
 /* Círculo central */
@@ -188,22 +197,23 @@
 }
 
 .cr-counter-circle {
-  width: 170px;
-  height: 170px;
+  width: min(58vw, 170px);
+  height: min(58vw, 170px);
+  max-width: 220px;
+  max-height: 220px;
   border-radius: 999px;
   border-width: 5px;
   border-style: solid;
-  background: radial-gradient(circle at 30% 20%, #1e293b, #020617);
+  background: radial-gradient(circle at 30% 20%, #0b2238, #031021);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.9),
-    inset 0 0 40px rgba(15, 23, 42, 0.85);
+  box-shadow: 0 14px 36px rgba(2,6,23,0.5), inset 0 0 30px rgba(2,6,23,0.5);
 }
 
 .cr-reps-number {
-  font-size: 3.5rem;
+  font-size: clamp(2.25rem, 8vw, 3.5rem);
   font-weight: 700;
   line-height: 1;
 }
@@ -211,7 +221,7 @@
 .cr-reps-label {
   font-size: 0.9rem;
   margin-top: 0.4rem;
-  color: #e5e7eb;
+  color: rgba(255,255,255,0.9);
 }
 
 .cr-reps-target {
@@ -224,46 +234,44 @@
 
 .cr-counter-buttons {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.6rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
   margin-top: 0.25rem;
 }
 
 .cr-btn {
-  border-radius: 999px;
-  padding: 0.6rem 0.8rem;
-  font-size: 0.9rem;
-  font-weight: 600;
+  border-radius: 12px;
+  padding: 0.8rem 0.9rem;
+  font-size: 1rem;
+  font-weight: 700;
   border: 1px solid transparent;
   cursor: pointer;
-  transition: transform 0.05s ease, box-shadow 0.1s ease,
-    background 0.15s ease, border-color 0.15s ease;
+  transition: transform 0.08s ease, box-shadow 0.12s ease, background 0.15s ease, border-color 0.15s ease;
+  min-height: 44px;
+  color: var(--text);
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
 }
 
 .cr-btn-primary {
-  background-color: #22c55e;
-  color: #0f172a;
-  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.45);
+  background-color: var(--success);
+  color: var(--on-primary);
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.12);
 }
 
 .cr-btn-secondary {
-  background-color: #020617;
-  color: #e2e8f0;
-  border-color: #1e293b;
+  background-color: var(--card-bg);
+  color: var(--text);
+  border-color: var(--card-border);
 }
 
 .cr-btn-full {
   width: 100%;
   text-align: center;
   margin-top: 0.3rem;
-  background: linear-gradient(
-    135deg,
-    rgba(15, 23, 42, 1),
-    rgba(15, 23, 42, 0.9),
-    rgba(15, 23, 42, 1)
-  );
+  background: linear-gradient(135deg, rgba(15,23,42,1), rgba(15,23,42,0.95));
   color: #e5e7eb;
-  border: 1px solid #e5e7eb;
+  border: 1px solid rgba(229,230,235,0.12);
 }
 
 /* Input objetivo */
@@ -274,18 +282,18 @@
   justify-content: space-between;
   align-items: center;
   gap: 0.75rem;
-  font-size: 0.8rem;
-  color: #cbd5f5;
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.9);
 }
 
 .cr-target-input {
   width: 4rem;
-  padding: 0.15rem 0.35rem;
-  font-size: 0.85rem;
+  padding: 0.2rem 0.45rem;
+  font-size: 0.95rem;
   border-radius: 0.5rem;
-  border: 1px solid #475569;
-  background-color: #020617;
-  color: #e5e7eb;
+  border: 1px solid rgba(255,255,255,0.12);
+  background-color: rgba(255,255,255,0.06);
+  color: var(--on-primary);
   text-align: center;
 }
 
@@ -299,11 +307,11 @@
 
 .cr-add-input {
   width: 5rem;
-  padding: 0.25rem 0.4rem;
+  padding: 0.3rem 0.5rem;
   border-radius: 0.5rem;
-  border: 1px solid #475569;
-  background-color: #020617;
-  color: #e5e7eb;
+  border: 1px solid rgba(255,255,255,0.12);
+  background-color: rgba(255,255,255,0.06);
+  color: var(--on-primary);
   text-align: center;
 }
 
@@ -335,9 +343,9 @@
   justify-content: center;
   padding: 0.6rem 0.8rem;
   border-radius: 0.9rem;
-  border: 1px solid #e2e8f0;
-  background: #ffffff;
-  color: #0f172a;
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
+  color: var(--text);
   box-shadow: 0 6px 18px rgba(15,23,42,0.06);
 }
 
@@ -356,13 +364,13 @@
 
 .cr-history-panel {
   border-radius: 1.25rem;
-  border: 1px solid #e2e8f0;
-  background-color: #ffffff;
   padding: 1rem 1.1rem;
   box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
   display: flex;
   flex-direction: column;
   min-height: 220px;
+  border: 1px solid var(--card-border);
+  background-color: var(--card-bg);
 }
 
 .cr-history-description {
@@ -380,7 +388,7 @@
 
 .cr-history-empty {
   font-size: 0.85rem;
-  color: #cbd5e1;
+  color: var(--muted);
   font-style: italic;
   margin-top: 0.5rem;
 }
@@ -396,12 +404,12 @@
 
 .cr-history-item {
   border-radius: 0.9rem;
-  border: 1px solid #e2e8f0;
   padding: 0.45rem 0.6rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-size: 0.8rem;
+  border: 1px solid var(--card-border);
 }
 
 .cr-history-left {
@@ -424,13 +432,16 @@
   color: #64748b;
 }
 
-/* Responsive */
+/* Responsive: switch to 2-column layout on wider screens */
+@media (min-width: 769px) {
+  .cr-layout { display: grid; grid-template-columns: 1.2fr 1fr; gap: 1.5rem; }
+}
 
-@media (max-width: 768px) {
-  .cr-layout {
-    display: flex;
-    flex-direction: column;
-  }
+/* Make calendar and grids more compact on phones */
+@media (max-width: 420px) {
+  .cr-exercise-card { padding: 0.6rem; }
+  .cr-exercise-name { font-size: 0.9rem }
+  .cr-exercise-video-small { width: 72px; height: 48px }
 }
 
 /* Buscador de ejercicios */
@@ -444,10 +455,10 @@
   width: 100%;
   padding: 0.5rem 0.7rem;
   border-radius: 0.75rem;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--card-border);
   font-size: 0.85rem;
-  color: #0f172a;
-  background-color: #f8fafc;
+  color: var(--text);
+  background-color: var(--surface);
   outline: none;
   transition: border-color 0.15s ease, box-shadow 0.15s ease,
     background-color 0.15s ease;
@@ -458,9 +469,9 @@
 }
 
 .cr-exercise-search-input:focus {
-  border-color: #2563eb;
-  background-color: #ffffff;
-  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.3);
+  border-color: var(--primary);
+  background-color: var(--card-bg);
+  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.14);
 }
 
 /* Badges y descripción de ejercicio */
@@ -484,7 +495,7 @@
 .cr-exercise-description {
   margin-top: 0.2rem;
   font-size: 0.78rem;
-  color: #cbd5f5;
+  color: var(--muted);
   max-width: 28rem;
 }
 
@@ -520,14 +531,14 @@
   margin-bottom: 0.6rem;
   padding: 0.6rem 0.7rem;
   border-radius: 0.9rem;
-  background-color: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background-color: var(--surface);
+  border: 1px solid var(--card-border);
 }
 
 .cr-volume-title {
   font-size: 0.8rem;
   font-weight: 600;
-  color: #0f172a;
+  color: var(--text);
   margin-bottom: 0.5rem;
 }
 
@@ -539,8 +550,8 @@
 
 .cr-calendar-nav button {
   border-radius: 8px;
-  border: 1px solid #e2e8f0;
-  background: #ffffff;
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
   padding: 4px 8px;
   cursor: pointer;
   font-weight: 700;
@@ -571,12 +582,12 @@
 .cr-volume-day-number {
   font-size: 0.75rem;
   font-weight: 600;
-  color: #0f172a;
+  color: var(--text);
 }
 
 .cr-volume-day-volume {
   font-size: 0.7rem;
-  color: #334155;
+  color: var(--muted);
 }
 
 /* En móviles hacemos el calendario en 4 columnas para que no quede tan estrecho */
@@ -635,6 +646,14 @@
   }
 }
 
+/* Bottom-sheet style for generic modals on small screens */
+@media (max-width: 520px) {
+  .cr-modal-backdrop { align-items: flex-end; padding: 0 8px 8px 8px }
+  .cr-modal { width: 100%; border-bottom-left-radius: 0; border-bottom-right-radius: 0; border-top-left-radius: 12px; border-top-right-radius: 12px; max-height: 86vh; overflow:auto }
+  .cr-modal .cr-modal-header { padding: 12px 14px }
+  .cr-modal .cr-modal-body { padding: 12px }
+}
+
 /* Modal fallback styles: ensure generic modal classes used across components
    are always interactive and on top of other UI layers. This fixes cases
    where selects inside the modal cannot be opened because of stacking. */
@@ -654,9 +673,9 @@
 .cr-modal {
   position: relative;
   z-index: 10001;
-  background: #ffffff;
+  background: var(--card-bg);
   border-radius: 12px;
-  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.35);
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28);
   overflow: visible;
 }
 

@@ -41,7 +41,7 @@
 /* Card genérico */
 
 .reforma-card {
-  background-color: #ffffff;
+  background-color: var(--card-bg);
   border-radius: 18px;
   box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
   padding: 18px 20px;
@@ -67,12 +67,12 @@
 
 .reforma-button-secondary {
   border-radius: 999px;
-  border: 1px solid #cbd5f5;
-  background-color: #ffffff;
+  border: 1px solid var(--card-border);
+  background-color: var(--surface);
   padding: 6px 12px;
   font-size: 0.8rem;
   font-weight: 500;
-  color: #0f172a;
+  color: var(--text);
   cursor: pointer;
   transition: background-color 0.15s ease, box-shadow 0.15s ease;
 }

@@ -52,7 +52,8 @@ export function ClientSelector({
         const payload = JSON.stringify(clientAssignments);
         // base64url encode
         const b64 = btoa(unescape(encodeURIComponent(payload))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-        url = `${url}?a=${b64}`;
+        // include both query param and fragment for maximum compatibility on mobile apps
+        url = `${url}?a=${b64}#a=${b64}`;
       }
     } catch (e) {
       // ignore encoding errors
@@ -84,7 +85,7 @@ export function ClientSelector({
       if (clientAssignments && clientAssignments.length > 0) {
         const payload = JSON.stringify(clientAssignments);
         const b64 = btoa(unescape(encodeURIComponent(payload))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-        url = `${url}?a=${b64}`;
+        url = `${url}?a=${b64}#a=${b64}`;
       }
     } catch (e) {
       // ignore
@@ -192,6 +193,32 @@ export function ClientSelector({
               )}
             </>
           )}
+        </div>
+      )}
+
+      {/* Export / Import clients (help migrate from localhost to production) */}
+      {!disableAdd && (
+        <div style={{ marginTop: 8, display: 'flex', gap: 8 }}>
+          <button className="cr-btn" onClick={() => {
+            try {
+              const data = JSON.stringify(clients || []);
+              if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(data).then(()=> alert('Clientes copiados al portapapeles (JSON)'));
+              } else {
+                const ta = document.createElement('textarea'); ta.value = data; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); alert('Clientes copiados al portapapeles (JSON)');
+              }
+            } catch (e) { alert('No se pudo exportar clientes'); }
+          }}>Exportar clientes</button>
+          <button className="cr-btn" onClick={() => {
+            const raw = prompt('Pega aquí el JSON de clientes para importar (reemplazará los existentes):');
+            if (!raw) return;
+            try {
+              const parsed = JSON.parse(raw);
+              if (!Array.isArray(parsed)) throw new Error('Formato incorrecto');
+              localStorage.setItem('cr_clients_v1', JSON.stringify(parsed));
+              alert('Clientes importados. Recarga la página para ver los cambios.');
+            } catch (e) { alert('JSON inválido'); }
+          }}>Importar clientes</button>
         </div>
       )}
 

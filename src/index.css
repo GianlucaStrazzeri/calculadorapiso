@@ -1,14 +1,29 @@
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+  /* Mobile-first base variables */
+  --font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  --base-size: 16px;
+  --line-height: 1.45;
+  --text: #071127; /* primary readable text */
+  --muted: #475569; /* secondary text */
+  --bg: #ffffff;
+  --surface: #f8fafc;
+  --card-bg: #ffffff;
+  --card-border: #e6eef8;
+  --elevated-shadow: 0 10px 30px rgba(2,6,23,0.06);
+  --primary: #1e40af; /* darker blue for better contrast */
+  --primary-variant: #2b63d6; /* lighter primary for highlights */
+  --on-primary: #ffffff;
+  --success: #16a34a;
+  --danger: #ef4444;
 
+  font-family: var(--font-family);
+  font-size: var(--base-size);
+  line-height: var(--line-height);
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
+  color: var(--text);
+  background-color: var(--bg);
+
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -24,45 +39,44 @@ a:hover {
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  width: 100%;
+  background-color: var(--bg);
+  color: var(--text);
+  -webkit-tap-highlight-color: rgba(0,0,0,0);
+  -webkit-touch-callout: none;
+  font-variant-ligatures: none;
 }
 
 h1 {
-  font-size: 3.2em;
+  font-size: 2rem;
   line-height: 1.1;
 }
 
 button {
-  border-radius: 8px;
+  border-radius: 10px;
   border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
+  padding: 0.6em 1em;
+  font-size: 1rem;
+  font-weight: 600;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: var(--surface);
+  color: var(--text);
   cursor: pointer;
-  transition: border-color 0.25s;
+  transition: box-shadow 0.18s, transform 0.08s;
+  min-height: 44px; /* accessible touch target */
 }
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
+button:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(2,6,23,0.04); }
+button:active { transform: translateY(0); }
+button:focus, button:focus-visible { outline: 3px solid rgba(37,99,235,0.12); outline-offset: 2px }
 
 @media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+  :root { }
+}
+
+/* Larger screens: scale up type and layout (mobile-first) */
+@media (min-width: 760px){
+  :root{ --base-size: 16px }
+  h1{ font-size: 2.4rem }
 }

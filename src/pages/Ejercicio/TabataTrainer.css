@@ -24,7 +24,7 @@
 .tt-card {
   width: 100%;
   max-width: 360px;
-  background: #ffffff;
+  background: var(--card-bg);
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 18px 45px rgba(15, 23, 42, 0.32);
@@ -205,7 +205,7 @@
 
 /* Botón START grande */
 .tt-bottom-start {
-  background: #ffffff;
+  background: var(--card-bg);
   color: var(--tt-blue-dark);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
 }

@@ -118,7 +118,17 @@ export function AssignExercisePanel({
 
   return (
     <div className="cr-assign-panel">
-      <h3>Asignación de ejercicios a {client.nombre}</h3>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <h3 style={{ margin: 0 }}>Asignación de ejercicios a {client.nombre}</h3>
+        <button
+          type="button"
+          className="cr-btn cr-btn-ghost"
+          onClick={() => (window.location.href = '/contadorreps')}
+          style={{ marginLeft: 'auto' }}
+        >
+          Volver a contadorreps
+        </button>
+      </div>
 
       <form className="cr-assign-form" onSubmit={handleCreate}>
         <label className="cr-field">
